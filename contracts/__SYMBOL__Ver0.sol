@@ -25,10 +25,12 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgrad
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "erc721psi/contracts/extension/ERC721PsiAddressDataUpgradeable.sol";
 import "erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
+import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 
 contract __SYMBOL__Ver0 is
     ERC721PsiAddressDataUpgradeable,
     ERC721PsiBurnableUpgradeable,
+    RevokableDefaultOperatorFiltererUpgradeable,
     OwnableUpgradeable,
     IERC2981Upgradeable
 {
@@ -37,6 +39,7 @@ contract __SYMBOL__Ver0 is
 
     function initialize() public initializer {
         __ERC721Psi_init("$$Token Name$$", "__SYMBOL__");
+        __RevokableDefaultOperatorFilterer_init();
         __Ownable_init();
 
         // set correct values from deploy script!
@@ -69,9 +72,9 @@ contract __SYMBOL__Ver0 is
     }
 
     function balanceOf(
-        address owner
+        address owner_
     ) public view virtual override(ERC721PsiAddressDataUpgradeable, ERC721PsiUpgradeable) returns (uint) {
-        return super.balanceOf(owner);
+        return super.balanceOf(owner_);
     }
 
     function totalSupply()
@@ -82,6 +85,49 @@ contract __SYMBOL__Ver0 is
         returns (uint256)
     {
         return super.totalSupply();
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    //// Ownable
+    ///////////////////////////////////////////////////////////////////
+
+    function owner()
+        public
+        view
+        virtual
+        override(OwnableUpgradeable, RevokableOperatorFiltererUpgradeable)
+        returns (address)
+    {
+        return OwnableUpgradeable.owner();
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    //// Apply Operator Filter
+    ///////////////////////////////////////////////////////////////////
+
+    function setApprovalForAll(address operator, bool approved) public override onlyAllowedOperatorApproval(operator) {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    function approve(address operator, uint256 tokenId) public override onlyAllowedOperatorApproval(operator) {
+        super.approve(operator, tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public override onlyAllowedOperator(from) {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public override onlyAllowedOperator(from) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory data
+    ) public override onlyAllowedOperator(from) {
+        super.safeTransferFrom(from, to, tokenId, data);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -338,15 +384,15 @@ contract __SYMBOL__Ver0 is
     uint64 private constant _AUX_BITMASK_ADDRESS_DATA_ENTRY = (1 << 16) - 1;
     uint64 private constant _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED = 0;
 
-    function allowListMemberMintCount(address owner) public view returns (uint256) {
-        return (_addressData[owner].aux >> _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) & _AUX_BITMASK_ADDRESS_DATA_ENTRY;
+    function allowListMemberMintCount(address owner_) public view returns (uint256) {
+        return (_addressData[owner_].aux >> _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) & _AUX_BITMASK_ADDRESS_DATA_ENTRY;
     }
 
-    function _incrementAllowListMemberMintCount(address owner, uint256 quantity) private {
-        require(allowListMemberMintCount(owner) + quantity <= _AUX_BITMASK_ADDRESS_DATA_ENTRY, "quantity overflow");
+    function _incrementAllowListMemberMintCount(address owner_, uint256 quantity) private {
+        require(allowListMemberMintCount(owner_) + quantity <= _AUX_BITMASK_ADDRESS_DATA_ENTRY, "quantity overflow");
         uint64 one = 1;
-        uint64 aux = _addressData[owner].aux + uint64(quantity) * ((one << _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) | one);
-        _addressData[owner].aux = aux;
+        uint64 aux = _addressData[owner_].aux + uint64(quantity) * ((one << _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) | one);
+        _addressData[owner_].aux = aux;
     }
 
     ///////////////////////////////////////////////////////////////////
