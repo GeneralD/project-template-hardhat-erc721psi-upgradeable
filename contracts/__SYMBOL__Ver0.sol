@@ -26,16 +26,23 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "erc721psi/contracts/extension/ERC721PsiAddressDataUpgradeable.sol";
 import "erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
+import "./ERC4907Upgradeable.sol";
 
 contract __SYMBOL__Ver0 is
     ERC721PsiAddressDataUpgradeable,
     ERC721PsiBurnableUpgradeable,
+    ERC4907Upgradeable,
     RevokableDefaultOperatorFiltererUpgradeable,
     OwnableUpgradeable,
     IERC2981Upgradeable
 {
     using MerkleProofUpgradeable for bytes32[];
     using StringsUpgradeable for uint256;
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize() public initializer {
         __ERC721Psi_init("$$Token Name$$", "__SYMBOL__");
@@ -54,6 +61,21 @@ contract __SYMBOL__Ver0 is
         _royaltyFraction = 0;
         _royaltyReceiver = msg.sender;
         _withdrawalReceiver = msg.sender;
+    }
+
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 quantity
+    ) internal virtual override(ERC4907Upgradeable, ERC721PsiUpgradeable) {
+        super._beforeTokenTransfers(from, to, startTokenId, quantity);
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC4907Upgradeable, ERC721PsiUpgradeable, IERC165Upgradeable) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 
     function _afterTokenTransfers(
