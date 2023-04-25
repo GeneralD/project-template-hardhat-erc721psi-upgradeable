@@ -14,7 +14,7 @@ export default async (arg: any, env: HardhatRuntimeEnvironment) => {
     })
 
     // Airdrops are supplied to owners of this NFT
-    const contractAddress = "0x1111111111222222222233333333334444444444"
+    const contractAddress = process.env.SNAPSHOT_TARGET_CONTRACT_ADDRESS!
 
     const ownersResponse = await getOwnersForCollection(alchemy, contractAddress)
     // filter to exclude burnt (zero address)
