@@ -15,12 +15,22 @@ describe("__SYMBOL__ SupportsInterface (ERC165)", () => {
         expect(await instance.supportsInterface("0x80ac58cd")).to.be.true
     })
 
+    it("Check if the contract supports ERC721Enumerable", async () => {
+        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
+        expect(await instance.supportsInterface("0x780e9d63")).to.be.true
+    })
+
+    it("Check if the contract supports ERC721Metadata", async () => {
+        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
+        expect(await instance.supportsInterface("0x5b5e139f")).to.be.true
+    })
+
     it("Check if the contract supports ERC2981", async () => {
         const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
         expect(await instance.supportsInterface("0x2a55205a")).to.be.true
     })
 
-    it("Check if the contract doesn't supports unknown interface", async () => {
+    it("Check if the contract doesn't support unknown interface", async () => {
         const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
         expect(await instance.supportsInterface("0xffffffff")).to.be.false
     })
