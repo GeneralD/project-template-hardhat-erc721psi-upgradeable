@@ -1,10 +1,8 @@
 import { expect } from 'chai'
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
-import { ethers, upgrades } from 'hardhat'
+import { upgrades } from 'hardhat'
 import { describe, it } from 'mocha'
 
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
-import { ERC165Upgradeable, IERC165Upgradeable } from '../typechain'
 
 describe("__SYMBOL__ SupportsInterface (ERC165)", () => {
     it("Check if the contract supports ERC165", async () => {
