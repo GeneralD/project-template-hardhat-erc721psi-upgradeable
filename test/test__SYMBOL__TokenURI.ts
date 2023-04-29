@@ -28,7 +28,7 @@ describe("__SYMBOL__ TokenURI", () => {
                 .to.equal(`https://sample.com/${name}.json`)
         }
 
-        instance.setStage(3, 1)
+        await instance.setStage(3, 1)
 
         {
             const hash = keccak256(toUtf8Bytes("After_3"))
