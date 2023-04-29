@@ -61,6 +61,12 @@ contract __SYMBOL__Ver0 is
         _withdrawalReceiver = msg.sender;
     }
 
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721PsiUpgradeable, IERC165Upgradeable) returns (bool) {
+        return interfaceId == type(IERC2981Upgradeable).interfaceId || super.supportsInterface(interfaceId);
+    }
+
     function _afterTokenTransfers(
         address from,
         address to,
