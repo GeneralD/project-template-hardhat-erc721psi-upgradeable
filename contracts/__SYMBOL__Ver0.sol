@@ -37,6 +37,11 @@ contract __SYMBOL__Ver0 is
     using MerkleProofUpgradeable for bytes32[];
     using StringsUpgradeable for uint256;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize() public initializer {
         __ERC721Psi_init("$$Token Name$$", "__SYMBOL__");
         __RevokableDefaultOperatorFilterer_init();
