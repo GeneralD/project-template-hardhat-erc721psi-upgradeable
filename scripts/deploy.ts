@@ -1,5 +1,4 @@
-import { parseEther } from 'ethers/lib/utils'
-import env, { ethers, upgrades } from 'hardhat'
+import env, { upgrades } from 'hardhat'
 
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import HardhatRuntimeUtility from '../libraries/HardhatRuntimeUtility'
