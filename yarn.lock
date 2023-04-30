@@ -1288,10 +1288,10 @@
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
 
-"@typechain/ethers-v5@^7.0.1":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@typechain/ethers-v5/-/ethers-v5-7.2.0.tgz#d559cffe0efe6bdbc20e644b817f6fa8add5e8f8"
-  integrity sha512-jfcmlTvaaJjng63QsT49MT6R1HFhtO/TBMWbyzPFSzMmVIqb2tL6prnKBs4ZJrSvmgIXWy+ttSjpaxCTq8D/Tw==
+"@typechain/ethers-v6@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@typechain/ethers-v6/-/ethers-v6-0.3.0.tgz#76f5e90f0d4fdd9c43f9aea281061dc4c2fcdbe6"
+  integrity sha512-/dYPGDqwyyb8FG0PEftOEegnB9OEJEfxaln+Z4c4nUfHcX5YEbl5Y/hKueA+oXTQdgJgBOiqksK8F+Bq+0tWIA==
   dependencies:
     lodash "^4.17.15"
     ts-essentials "^7.0.1"
