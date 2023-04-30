@@ -25,13 +25,13 @@
     "csv-parser": "^3.0.0",
     "dotenv": "^16.0.0",
     "erc721psi": "^0.7.0",
-    "eslint": "^7.29.0",
+    "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-config-standard": "^16.0.3",
+    "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.1.1",
     "ethereum-waffle": "^3.0.0",
     "ethers": "^5.0.0",
     "hardhat": "^2.9.7",
@@ -45,8 +45,8 @@
     "solhint": "^3.3.6",
     "solidity-coverage": "^0.7.16",
     "ts-node": "^10.1.0",
-    "typechain": "^5.1.2",
-    "typescript": "^4.5.2"
+    "typechain": "^8.1.1",
+    "typescript": "^5.0.4"
   },
   "scripts": {
     "clean": "hardhat clean",
