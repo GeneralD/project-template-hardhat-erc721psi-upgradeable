@@ -54,6 +54,7 @@
     "exec": "hardhat run",
     "serve": "hardhat node",
     "test": "hardhat test",
+    "coverage": "hardhat coverage",
     "verify": "hardhat verify"
   }
 }
