@@ -182,8 +182,17 @@ contract __SYMBOL__Ver0 is
         return baseURI;
     }
 
-    function setBaseURI(string memory baseURI_) external onlyOwner {
+    function setBaseURI(string memory baseURI_) external onlyOwner checkSuffix(baseURI_, "/") {
         baseURI = baseURI_;
+    }
+
+    /**
+     * @dev check if the text ends with the suffix.
+     */
+    modifier checkSuffix(string memory text, bytes1 suffix) {
+        bytes memory b = bytes(text);
+        require(b.length == 0 || b[b.length - 1] == suffix, "invalid suffix");
+        _;
     }
 
     //////////////////////////////////

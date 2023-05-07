@@ -39,4 +39,12 @@ describe("__SYMBOL__ TokenURI", () => {
                 .to.equal(`https://sample.com/${name}.json`)
         }
     })
+
+    it("Check if TokenURI doesn't end with slash, the value will be reverted", async () => {
+        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
+        // URI ends with slash is ok
+        await expect(instance.setBaseURI("https://sample.com/")).to.not.be.reverted
+        // but URI without slash is not ok
+        await expect(instance.setBaseURI("https://sample.com")).to.be.revertedWith("invalid suffix")
+    })
 })
