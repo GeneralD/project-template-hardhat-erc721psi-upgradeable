@@ -18,6 +18,18 @@ describe("__SYMBOL__ Minting Period", () => {
         await instance.connect(alice).publicMint(1, { value: ethers.utils.parseEther("1") })
     })
 
+    it("Can't set public minting period if start date is later than end date", async () => {
+        const factory = await latest__SYMBOL__Factory
+        const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+        const now = (await ethers.provider.getBlock("latest")).timestamp
+        const yesterday = now - 86400
+        const dayBeforeYesterday = yesterday - 86400
+
+        await expect(instance.setPublicMintAvailablePeriod(yesterday, dayBeforeYesterday))
+            .to.be.revertedWith("invalid period")
+    })
+
     it("Can't public mint if minting period is not started", async () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
@@ -85,6 +97,18 @@ describe("__SYMBOL__ Minting Period", () => {
 
         const proof = tree.getHexProof(keccak256(alice.address))
         await instance.connect(alice).allowlistMint(1, proof, { value: ethers.utils.parseEther("1") })
+    })
+
+    it("Can't set allowlist minting period if start date is later than end date", async () => {
+        const factory = await latest__SYMBOL__Factory
+        const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+        const now = (await ethers.provider.getBlock("latest")).timestamp
+        const yesterday = now - 86400
+        const dayBeforeYesterday = yesterday - 86400
+
+        await expect(instance.setAllowlistMintAvailablePeriod(yesterday, dayBeforeYesterday))
+            .to.be.revertedWith("invalid period")
     })
 
     it("Can't allowlist mint if minting period is not started", async () => {

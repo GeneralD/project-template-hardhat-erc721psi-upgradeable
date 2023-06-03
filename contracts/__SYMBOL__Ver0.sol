@@ -604,6 +604,7 @@ contract __SYMBOL__Ver0 is
      * @param endTimestamp timestamp to end public minting
      */
     function setPublicMintAvailablePeriod(uint256 startTimestamp, uint256 endTimestamp) external onlyOwner {
+        require(startTimestamp <= endTimestamp, "invalid period");
         publicMintStartTimestamp = startTimestamp;
         publicMintEndTimestamp = endTimestamp;
         emit PublicMintAvailablePeriodChanged(startTimestamp, endTimestamp);
@@ -642,6 +643,7 @@ contract __SYMBOL__Ver0 is
      * @param endTimestamp timestamp to end allowlist minting
      */
     function setAllowlistMintAvailablePeriod(uint256 startTimestamp, uint256 endTimestamp) external onlyOwner {
+        require(startTimestamp <= endTimestamp, "invalid period");
         allowlistMintStartTimestamp = startTimestamp;
         allowlistMintEndTimestamp = endTimestamp;
         emit AllowlistMintAvailablePeriodChanged(startTimestamp, endTimestamp);
