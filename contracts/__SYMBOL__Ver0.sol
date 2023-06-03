@@ -50,10 +50,12 @@ contract __SYMBOL__Ver0 is
         // set correct values from deploy script!
         baseURI = "/";
         mintLimit = 0;
-        isPublicMintPaused = true;
-        isAllowlistMintPaused = true;
+        publicMintStartTimestamp = 0; // already started
+        publicMintEndTimestamp = type(uint256).max; // never ends
+        allowlistMintStartTimestamp = 0; // already started
+        allowlistMintEndTimestamp = type(uint256).max; // never ends
         publicPrice = 1 ether;
-        allowListPrice = 0.01 ether;
+        allowlistPrice = 0.01 ether;
         allowlistedMemberMintLimit = 1;
         highestStage = 0;
         _royaltyFraction = 0;
@@ -288,7 +290,7 @@ contract __SYMBOL__Ver0 is
 
     function publicMint(
         uint256 quantity
-    ) external payable whenPublicMintNotPaused checkMintLimit(quantity) checkPay(publicPrice, quantity) {
+    ) external payable whenPublicMintingAvailable checkMintLimit(quantity) checkPay(publicPrice, quantity) {
         _safeMint(msg.sender, quantity);
     }
 
@@ -302,13 +304,13 @@ contract __SYMBOL__Ver0 is
     )
         external
         payable
-        whenAllowlistMintNotPaused
+        whenAllowlistMintingAvailable
         checkAllowlist(merkleProof)
         checkAllowlistMintLimit(quantity)
         checkMintLimit(quantity)
-        checkPay(allowListPrice, quantity)
+        checkPay(allowlistPrice, quantity)
     {
-        _incrementAllowListMemberMintCount(msg.sender, quantity);
+        _incrementAllowlistMemberMintCount(msg.sender, quantity);
         _safeMint(msg.sender, quantity);
     }
 
@@ -350,10 +352,10 @@ contract __SYMBOL__Ver0 is
     //// Allowlist Mint
     //////////////////////////////////
 
-    uint256 public allowListPrice;
+    uint256 public allowlistPrice;
 
-    function setAllowListPrice(uint256 allowListPrice_) external onlyOwner {
-        allowListPrice = allowListPrice_;
+    function setAllowlistPrice(uint256 allowlistPrice_) external onlyOwner {
+        allowlistPrice = allowlistPrice_;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -391,7 +393,7 @@ contract __SYMBOL__Ver0 is
 
     modifier checkAllowlistMintLimit(uint256 quantity) {
         require(
-            allowListMemberMintCount(msg.sender) + quantity <= allowlistedMemberMintLimit,
+            allowlistMemberMintCount(msg.sender) + quantity <= allowlistedMemberMintLimit,
             "allowlist minting exceeds the limit"
         );
         _;
@@ -404,49 +406,56 @@ contract __SYMBOL__Ver0 is
     uint64 private constant _AUX_BITMASK_ADDRESS_DATA_ENTRY = (1 << 16) - 1;
     uint64 private constant _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED = 0;
 
-    function allowListMemberMintCount(address owner_) public view returns (uint256) {
+    function allowlistMemberMintCount(address owner_) public view returns (uint256) {
         return (_addressData[owner_].aux >> _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) & _AUX_BITMASK_ADDRESS_DATA_ENTRY;
     }
 
-    function _incrementAllowListMemberMintCount(address owner_, uint256 quantity) private {
-        require(allowListMemberMintCount(owner_) + quantity <= _AUX_BITMASK_ADDRESS_DATA_ENTRY, "quantity overflow");
+    function _incrementAllowlistMemberMintCount(address owner_, uint256 quantity) private {
+        require(allowlistMemberMintCount(owner_) + quantity <= _AUX_BITMASK_ADDRESS_DATA_ENTRY, "quantity overflow");
         uint64 one = 1;
         uint64 aux = _addressData[owner_].aux + uint64(quantity) * ((one << _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) | one);
         _addressData[owner_].aux = aux;
     }
 
     ///////////////////////////////////////////////////////////////////
-    //// Pausing
+    //// Minting Period
     ///////////////////////////////////////////////////////////////////
-
-    event PublicMintPaused();
-    event PublicMintUnpaused();
-    event AllowlistMintPaused();
-    event AllowlistMintUnpaused();
 
     //////////////////////////////////
     //// Public Mint
     //////////////////////////////////
 
-    bool public isPublicMintPaused;
+    event PublicMintAvailablePeriodChanged(uint256 startTimestamp, uint256 endTimestamp);
 
-    function pausePublicMint() external onlyOwner whenPublicMintNotPaused {
-        isPublicMintPaused = true;
-        emit PublicMintPaused();
+    /**
+     * @notice timestamp to start public minting
+     */
+    uint256 public publicMintStartTimestamp;
+
+    /**
+     * @notice timestamp to end public minting
+     */
+    uint256 public publicMintEndTimestamp;
+
+    /**
+     * @dev set timestamp to start and end public minting
+     * @param startTimestamp timestamp to start public minting
+     * @param endTimestamp timestamp to end public minting
+     */
+    function setPublicMintAvailablePeriod(uint256 startTimestamp, uint256 endTimestamp) external onlyOwner {
+        publicMintStartTimestamp = startTimestamp;
+        publicMintEndTimestamp = endTimestamp;
+        emit PublicMintAvailablePeriodChanged(startTimestamp, endTimestamp);
     }
 
-    function unpausePublicMint() external onlyOwner whenPublicMintPaused {
-        isPublicMintPaused = false;
-        emit PublicMintUnpaused();
-    }
-
-    modifier whenPublicMintNotPaused() {
-        require(!isPublicMintPaused, "public mint: paused");
-        _;
-    }
-
-    modifier whenPublicMintPaused() {
-        require(isPublicMintPaused, "public mint: not paused");
+    /**
+     * @dev modifier to check if public minting is available
+     */
+    modifier whenPublicMintingAvailable() {
+        require(
+            publicMintStartTimestamp <= block.timestamp && block.timestamp <= publicMintEndTimestamp,
+            "public minting: not started or ended"
+        );
         _;
     }
 
@@ -454,25 +463,37 @@ contract __SYMBOL__Ver0 is
     //// Allowlist Mint
     //////////////////////////////////
 
-    bool public isAllowlistMintPaused;
+    event AllowlistMintAvailablePeriodChanged(uint256 startTimestamp, uint256 endTimestamp);
 
-    function pauseAllowlistMint() external onlyOwner whenAllowlistMintNotPaused {
-        isAllowlistMintPaused = true;
-        emit AllowlistMintPaused();
+    /**
+     * @notice timestamp to start allowlist minting
+     */
+    uint256 public allowlistMintStartTimestamp;
+
+    /**
+     * @notice timestamp to end allowlist minting
+     */
+    uint256 public allowlistMintEndTimestamp;
+
+    /**
+     * @dev set timestamp to start and end allowlist minting
+     * @param startTimestamp timestamp to start allowlist minting
+     * @param endTimestamp timestamp to end allowlist minting
+     */
+    function setAllowlistMintAvailablePeriod(uint256 startTimestamp, uint256 endTimestamp) external onlyOwner {
+        allowlistMintStartTimestamp = startTimestamp;
+        allowlistMintEndTimestamp = endTimestamp;
+        emit AllowlistMintAvailablePeriodChanged(startTimestamp, endTimestamp);
     }
 
-    function unpauseAllowlistMint() external onlyOwner whenAllowlistMintPaused {
-        isAllowlistMintPaused = false;
-        emit AllowlistMintUnpaused();
-    }
-
-    modifier whenAllowlistMintNotPaused() {
-        require(!isAllowlistMintPaused, "allowlist mint: paused");
-        _;
-    }
-
-    modifier whenAllowlistMintPaused() {
-        require(isAllowlistMintPaused, "allowlist mint: not paused");
+    /**
+     * @dev modifier to check if allowlist minting is available
+     */
+    modifier whenAllowlistMintingAvailable() {
+        require(
+            allowlistMintStartTimestamp <= block.timestamp && block.timestamp <= allowlistMintEndTimestamp,
+            "allowlist minting: not started or ended"
+        );
         _;
     }
 

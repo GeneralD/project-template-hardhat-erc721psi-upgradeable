@@ -11,7 +11,7 @@ export default async (arg: any, env: HardhatRuntimeEnvironment) => {
     const factory = await env.ethers.getContractFactory("__SYMBOL__Ver0")
     const instance = factory.attach((await util.deployedProxy()).address) as Latest__SYMBOL__
 
-    const data = await Promise.all(util.allowlistedAddresses.map(address => instance.allowListMemberMintCount(address)
+    const data = await Promise.all(util.allowlistedAddresses.map(address => instance.allowlistMemberMintCount(address)
         .then((balance: any) => ({ address, balance }))
         .catch((_: any) => ({ address, balance: BigNumber.from(0) }))
     ))

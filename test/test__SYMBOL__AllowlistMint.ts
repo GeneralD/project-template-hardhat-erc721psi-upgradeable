@@ -13,7 +13,6 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
 
         const [, john, jonny, jonathan] = await ethers.getSigners()
 
-        if (await instance.isAllowlistMintPaused()) await instance.unpauseAllowlistMint()
         await instance.setMintLimit(100)
         await instance.setAllowlistedMemberMintLimit(5)
 
@@ -25,7 +24,7 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowListPrice()
+        const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price.mul(quantity)
         const balance = await john.getBalance()
@@ -36,7 +35,7 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         await expect(await instance.connect(john).allowlistMint(quantity, proof, { value: totalPrice }))
             .to.changeEtherBalances([instance, john], [totalPrice, totalPrice.mul(-1)])
 
-        expect(await instance.allowListMemberMintCount(john.address))
+        expect(await instance.allowlistMemberMintCount(john.address))
             .to.equal(quantity)
     })
 
@@ -46,7 +45,6 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
 
         const [, john, jonny, jonathan, mike] = await ethers.getSigners()
 
-        if (await instance.isAllowlistMintPaused()) await instance.unpauseAllowlistMint()
         await instance.setMintLimit(100)
         await instance.setAllowlistedMemberMintLimit(5)
 
@@ -70,7 +68,6 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
 
         const [, john, jonny, jonathan] = await ethers.getSigners()
 
-        if (await instance.isAllowlistMintPaused()) await instance.unpauseAllowlistMint()
         await instance.setMintLimit(100)
         await instance.setAllowlistedMemberMintLimit(5)
 
@@ -82,7 +79,7 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowListPrice()
+        const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price.mul(quantity)
         const balance = await jonathan.getBalance()
@@ -92,7 +89,7 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         await expect(await instance.connect(jonathan).allowlistMint(quantity, proofOfJonathan, { value: totalPrice }))
             .to.changeEtherBalances([instance, jonathan], [totalPrice, totalPrice.mul(-1)])
 
-        expect(await instance.allowListMemberMintCount(jonathan.address))
+        expect(await instance.allowlistMemberMintCount(jonathan.address))
             .to.equal(quantity)
 
         // try to mint more and fail
@@ -103,7 +100,7 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         const proofOfJonny = tree.getHexProof(keccak256(jonny.address))
         await instance.connect(jonny).allowlistMint(quantity, proofOfJonny, { value: totalPrice })
 
-        expect(await instance.allowListMemberMintCount(jonny.address))
+        expect(await instance.allowlistMemberMintCount(jonny.address))
             .to.equal(quantity)
     })
 
@@ -113,7 +110,6 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
 
         const [, john, jonny, jonathan] = await ethers.getSigners()
 
-        if (await instance.isAllowlistMintPaused()) await instance.unpauseAllowlistMint()
         await instance.setMintLimit(15)
         await instance.setAllowlistedMemberMintLimit(20)
 
@@ -125,7 +121,7 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowListPrice()
+        const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price.mul(quantity)
         const balance = await jonathan.getBalance()
@@ -142,7 +138,6 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
 
         const [, john, jonny, jonathan] = await ethers.getSigners()
 
-        if (await instance.isAllowlistMintPaused()) await instance.unpauseAllowlistMint()
         await instance.setMintLimit(100)
         await instance.setAllowlistedMemberMintLimit(5)
 
@@ -154,7 +149,7 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowListPrice()
+        const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price.mul(quantity)
         const balance = await john.getBalance()

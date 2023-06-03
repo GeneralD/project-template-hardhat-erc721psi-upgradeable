@@ -11,8 +11,6 @@ describe("__SYMBOL__ Public Minting", () => {
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
         await instance.setMintLimit(300)
-        if (await instance.isPublicMintPaused())
-            await instance.unpausePublicMint()
 
         // check balance to mint
         const price = await instance.publicPrice()
@@ -38,8 +36,6 @@ describe("__SYMBOL__ Public Minting", () => {
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
         await instance.setMintLimit(300)
-        if (await instance.isPublicMintPaused())
-            await instance.unpausePublicMint()
 
         // check balance to mint
         const price = await instance.publicPrice()
@@ -58,8 +54,6 @@ describe("__SYMBOL__ Public Minting", () => {
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
         await instance.setMintLimit(300)
-        if (await instance.isPublicMintPaused())
-            await instance.unpausePublicMint()
 
         // check balance to mint
         const price = await instance.publicPrice()

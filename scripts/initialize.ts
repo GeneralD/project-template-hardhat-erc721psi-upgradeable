@@ -14,24 +14,61 @@ async function main() {
 
     // TODO: Properly fill in the following settings!!
 
-    // set variables
+    ///////////////////////////////////////////////////////////////////
+    //// Base URI
+    ///////////////////////////////////////////////////////////////////
+
     await instance.setBaseURI("https://__symbol__-nft.com/", { nonce: nonce++ }) // should end with a slash
+
+    ///////////////////////////////////////////////////////////////////
+    //// Minting limit
+    ///////////////////////////////////////////////////////////////////
+
     await instance.setMintLimit(1000, { nonce: nonce++ })
-    // public mint
-    if (!await instance.isPublicMintPaused()) await instance.pausePublicMint({ nonce: nonce++ })
-    await instance.setPublicPrice(parseEther("0.01"), { nonce: nonce++ })
-    // allowlist mint
-    if (!await instance.isAllowlistMintPaused()) await instance.pauseAllowlistMint({ nonce: nonce++ })
-    await instance.setAllowListPrice(parseEther("0.005"), { nonce: nonce++ })
     await instance.setAllowlistedMemberMintLimit(3, { nonce: nonce++ })
-    // reveal
+
+    ///////////////////////////////////////////////////////////////////
+    //// Public minting period
+    ///////////////////////////////////////////////////////////////////
+
+    const publicMintStartDate = new Date("2023-10-01T00:00:00Z")
+    const publicMintEndDate = new Date("2023-10-31T23:59:59Z")
+    await instance.setPublicMintAvailablePeriod(Math.floor(publicMintStartDate.getTime() / 1000), Math.floor(publicMintEndDate.getTime() / 1000), { nonce: nonce++ })
+
+    ///////////////////////////////////////////////////////////////////
+    //// Allowlist minting period
+    ///////////////////////////////////////////////////////////////////
+
+    const allowlistMintStartDate = new Date("2023-10-01T00:00:00Z")
+    const allowlistMintEndDate = new Date("2023-10-31T23:59:59Z")
+    await instance.setAllowlistMintAvailablePeriod(Math.floor(allowlistMintStartDate.getTime() / 1000), Math.floor(allowlistMintEndDate.getTime() / 1000), { nonce: nonce++ })
+
+    ///////////////////////////////////////////////////////////////////
+    //// Pricing
+    ///////////////////////////////////////////////////////////////////
+
+    await instance.setPublicPrice(parseEther("0.01"), { nonce: nonce++ })
+    await instance.setAllowlistPrice(parseEther("0.005"), { nonce: nonce++ })
+
+    ///////////////////////////////////////////////////////////////////
+    //// Reveal
+    ///////////////////////////////////////////////////////////////////
+
     await instance.setKeccakPrefix(0, "__SYMBOL___", { nonce: nonce++ })
     // await instance.setKeccakPrefix(1, "NEXT_", { nonce: nonce++ })
     await instance.setHighestStage(0, { nonce: nonce++ })
-    // royalty
+
+    ///////////////////////////////////////////////////////////////////
+    //// Royalty
+    ///////////////////////////////////////////////////////////////////
+
     await instance.setRoyaltyFraction(500, { nonce: nonce++ }) // 5%
     await instance.setRoyaltyReceiver("0x1111111111222222222233333333334444444444", { nonce: nonce++ })
-    // withdrawal
+
+    ///////////////////////////////////////////////////////////////////
+    //// Withdrawal
+    ///////////////////////////////////////////////////////////////////
+
     await instance.setWithdrawalReceiver("0x5555555555666666666677777777778888888888", { nonce: nonce++ })
 }
 

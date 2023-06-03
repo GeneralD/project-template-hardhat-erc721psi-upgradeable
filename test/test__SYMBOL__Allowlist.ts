@@ -19,7 +19,6 @@ describe("__SYMBOL__ allowlist", () => {
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
         await instance.setAllowlist(root)
-        await instance.unpauseAllowlistMint()
 
         // john is allowlisted
         const proofOfJohn = tree.getHexProof(keccak256(john.address))
@@ -44,7 +43,6 @@ describe("__SYMBOL__ allowlist", () => {
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
         await instance.setAllowlist(root)
-        await instance.unpauseAllowlistMint()
 
         // deployer is not allowlisted
         const proofOfDeployer = tree.getHexProof(keccak256(deployer.address))
@@ -73,7 +71,6 @@ describe("__SYMBOL__ allowlist", () => {
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
         await instance.setAllowlist(root)
-        await instance.unpauseAllowlistMint()
 
         const proofOfJohn = tree.getHexProof(keccak256(john.address))
         expect(await instance.connect(mike).isAllowlisted(proofOfJohn)).is.false

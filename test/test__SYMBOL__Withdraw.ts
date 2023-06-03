@@ -11,7 +11,6 @@ describe("Withdraw from __SYMBOL__", () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
-        if (await instance.isPublicMintPaused()) await instance.unpausePublicMint()
         await instance.setMintLimit(200)
 
         const mintPrice = await instance.publicPrice()
@@ -48,7 +47,6 @@ describe("Withdraw from __SYMBOL__", () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
-        if (await instance.isPublicMintPaused()) await instance.unpausePublicMint()
         await instance.setMintLimit(200)
 
         const mintPrice = await instance.publicPrice()
