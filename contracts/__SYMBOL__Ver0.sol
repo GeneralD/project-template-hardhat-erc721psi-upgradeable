@@ -42,12 +42,15 @@ contract __SYMBOL__Ver0 is
         _disableInitializers();
     }
 
+    /**
+     * @dev initialize the contract.
+     */
     function initialize() public initializer {
         __ERC721Psi_init("$$Token Name$$", "__SYMBOL__");
         __RevokableDefaultOperatorFilterer_init();
         __Ownable_init();
 
-        // set correct values from deploy script!
+        // Set correct values from deploy script, below are just list of variables to remind us what to set!
         baseURI = "/";
         mintLimit = 0;
         publicMintStartTimestamp = 0; // already started
@@ -63,9 +66,14 @@ contract __SYMBOL__Ver0 is
         _withdrawalReceiver = msg.sender;
     }
 
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721PsiUpgradeable, IERC165Upgradeable) returns (bool) {
+        // We implemented ERC2981 by ourselves without inheriting one of the implementation that OpenZeppelin provides,
+        // so we need to add it to the list of supported interfaces here.
         return interfaceId == type(IERC2981Upgradeable).interfaceId || super.supportsInterface(interfaceId);
     }
 
@@ -111,6 +119,7 @@ contract __SYMBOL__Ver0 is
         override(OwnableUpgradeable, RevokableOperatorFiltererUpgradeable)
         returns (address)
     {
+        // OperatorFilterer just needs to know who the owner is, so we return the owner from Ownable
         return OwnableUpgradeable.owner();
     }
 
@@ -147,6 +156,9 @@ contract __SYMBOL__Ver0 is
     //// ERC2981
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev royalty fraction in percentage x 100. e.g. 5% should be 500.
+     */
     uint96 private _royaltyFraction;
 
     /**
@@ -156,12 +168,24 @@ contract __SYMBOL__Ver0 is
         _royaltyFraction = royaltyFraction;
     }
 
+    /**
+     * @dev royalty receiver.
+     */
     address private _royaltyReceiver;
 
+    /**
+     * @dev set royalty receiver.
+     * @param receiver royalty receiver.
+     */
     function setRoyaltyReceiver(address receiver) external onlyOwner {
         _royaltyReceiver = receiver;
     }
 
+    /**
+     * @dev get royalty info.
+     * @param tokenId token id.
+     * @param salePrice sale price.
+     */
     function royaltyInfo(
         uint256 tokenId,
         uint256 salePrice
@@ -178,18 +202,27 @@ contract __SYMBOL__Ver0 is
     //// Base URI
     //////////////////////////////////
 
+    /**
+     * @dev base URI.
+     */
     string public baseURI;
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
     }
 
+    /**
+     * @dev set base URI.
+     * @param baseURI_ base URI.
+     */
     function setBaseURI(string memory baseURI_) external onlyOwner checkSuffix(baseURI_, "/") {
         baseURI = baseURI_;
     }
 
     /**
-     * @dev check if the text ends with the suffix.
+     * @dev check if the given string ends with the given suffix.
+     * @param text string to check.
+     * @param suffix suffix to check.
      */
     modifier checkSuffix(string memory text, bytes1 suffix) {
         bytes memory b = bytes(text);
@@ -201,6 +234,9 @@ contract __SYMBOL__Ver0 is
     //// Contract URI
     //////////////////////////////////
 
+    /**
+     * @dev contract URI.
+     */
     function contractURI() public view returns (string memory) {
         return string(abi.encodePacked(baseURI, "index.json"));
     }
@@ -209,6 +245,10 @@ contract __SYMBOL__Ver0 is
     //// Token URI
     //////////////////////////////////
 
+    /**
+     * @dev token URI.
+     * @param tokenId token id to get URI.
+     */
     function tokenURI(
         uint256 tokenId
     ) public view virtual override checkTokenIdExists(tokenId) returns (string memory) {
@@ -221,12 +261,24 @@ contract __SYMBOL__Ver0 is
     //// Keccak Prefix
     //////////////////////////////////
 
+    /**
+     * @dev mapping from stage to keccak prefix.
+     */
     mapping(uint256 => string) private _stageToKeccakPrefix;
 
+    /**
+     * @dev get keccak prefix of the given token id.
+     * @param tokenId token id to get keccak prefix.
+     */
     function _keccakPrefixOf(uint256 tokenId) private view returns (string memory) {
         return _stageToKeccakPrefix[_tokenIdToStage[tokenId]];
     }
 
+    /**
+     * @dev set keccak prefix of the given stage.
+     * @param stage stage to set keccak prefix.
+     * @param prefix keccak prefix to set.
+     */
     function setKeccakPrefix(uint256 stage, string memory prefix) external onlyOwner {
         _stageToKeccakPrefix[stage] = prefix;
     }
@@ -235,26 +287,50 @@ contract __SYMBOL__Ver0 is
     //// Stage (Something like `Reveal`)
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev highest stage of the reveal.
+     */
     uint256 public highestStage;
 
+    /**
+     * @dev set highest stage of the reveal.
+     * @param highestStage_ highest stage of the reveal.
+     */
     function setHighestStage(uint256 highestStage_) external onlyOwner {
         highestStage = highestStage_;
     }
 
+    /**
+     * @dev mapping from token id to stage.
+     */
     mapping(uint256 => uint256) private _tokenIdToStage;
 
     event StageChanged(uint256 tokenId, uint256 stage);
 
+    /**
+     * @dev get stage of the given token id.
+     * @param tokenId token id to get stage.
+     */
     function stageOf(uint256 tokenId) external view checkTokenIdExists(tokenId) returns (uint256) {
         return _tokenIdToStage[tokenId];
     }
 
+    /**
+     * @dev set stage of the given token id.
+     * @param tokenId token id to set stage.
+     * @param stage stage to set.
+     */
     function _setStage(uint256 tokenId, uint256 stage) private checkTokenIdExists(tokenId) {
         require(stage <= highestStage, "stage: too big number");
         _tokenIdToStage[tokenId] = stage;
         emit StageChanged(tokenId, stage);
     }
 
+    /**
+     * @dev set stage of the given token id.
+     * @param tokenId token id to set stage.
+     * @param stage stage to set.
+     */
     function setStage(uint256 tokenId, uint256 stage) external onlyOwner {
         _setStage(tokenId, stage);
     }
@@ -263,6 +339,10 @@ contract __SYMBOL__Ver0 is
     //// Burning Tokens
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev burn the given token id.
+     * @param tokenId token id to burn.
+     */
     function burn(uint256 tokenId) public checkTokenIdExists(tokenId) {
         require(ownerOf(tokenId) == msg.sender || owner() == msg.sender);
         _burn(tokenId);
@@ -276,10 +356,19 @@ contract __SYMBOL__Ver0 is
     //// Admin Mint
     //////////////////////////////////
 
+    /**
+     * @dev mint the given quantity to the given address.
+     * @param quantity quantity to mint.
+     */
     function adminMint(uint256 quantity) external onlyOwner checkMintLimit(quantity) {
         _safeMint(msg.sender, quantity);
     }
 
+    /**
+     * @dev mint the given quantity to the given address.
+     * @param to address to mint.
+     * @param quantity quantity to mint.
+     */
     function adminMintTo(address to, uint256 quantity) external onlyOwner checkMintLimit(quantity) {
         _safeMint(to, quantity);
     }
@@ -288,6 +377,10 @@ contract __SYMBOL__Ver0 is
     //// Public Mint
     //////////////////////////////////
 
+    /**
+     * @dev mint the given quantity to the given address.
+     * @param quantity quantity to mint.
+     */
     function publicMint(
         uint256 quantity
     ) external payable whenPublicMintingAvailable checkMintLimit(quantity) checkPay(publicPrice, quantity) {
@@ -298,6 +391,11 @@ contract __SYMBOL__Ver0 is
     //// Allowlist Mint
     //////////////////////////////////
 
+    /**
+     * @dev mint the given quantity to the given address.
+     * @param quantity quantity to mint.
+     * @param merkleProof merkle proof to check.
+     */
     function allowlistMint(
         uint256 quantity,
         bytes32[] calldata merkleProof
@@ -318,8 +416,14 @@ contract __SYMBOL__Ver0 is
     //// Minting Limit
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev maximum number of tokens to mint.
+     */
     uint256 public mintLimit;
 
+    /**
+     * @dev get maximum number of tokens to mint.
+     */
     function setMintLimit(uint256 _mintLimit) external onlyOwner {
         mintLimit = _mintLimit;
     }
@@ -333,6 +437,11 @@ contract __SYMBOL__Ver0 is
     //// Pricing
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev check if the paid amount is enough.
+     * @param price price to check.
+     * @param quantity quantity to check.
+     */
     modifier checkPay(uint256 price, uint256 quantity) {
         require(msg.value >= price * quantity, "not enough eth");
         _;
@@ -342,8 +451,15 @@ contract __SYMBOL__Ver0 is
     //// Public Mint
     //////////////////////////////////
 
+    /**
+     * @notice public price.
+     */
     uint256 public publicPrice;
 
+    /**
+     * @dev set public price.
+     * @param publicPrice_ public price.
+     */
     function setPublicPrice(uint256 publicPrice_) external onlyOwner {
         publicPrice = publicPrice_;
     }
@@ -352,8 +468,15 @@ contract __SYMBOL__Ver0 is
     //// Allowlist Mint
     //////////////////////////////////
 
+    /**
+     * @notice allowlist price.
+     */
     uint256 public allowlistPrice;
 
+    /**
+     * @dev set allowlist price.
+     * @param allowlistPrice_ allowlist price.
+     */
     function setAllowlistPrice(uint256 allowlistPrice_) external onlyOwner {
         allowlistPrice = allowlistPrice_;
     }
@@ -366,12 +489,23 @@ contract __SYMBOL__Ver0 is
     //// Verification
     //////////////////////////////////
 
+    /**
+     * @dev merkle root of the allowlist.
+     */
     bytes32 private _merkleRoot;
 
+    /**
+     * @dev set merkle root of the allowlist.
+     * @param merkleRoot merkle root of the allowlist.
+     */
     function setAllowlist(bytes32 merkleRoot) external onlyOwner {
         _merkleRoot = merkleRoot;
     }
 
+    /**
+     * @dev check if the given address is allowlisted.
+     * @param merkleProof merkle proof to check.
+     */
     function isAllowlisted(bytes32[] calldata merkleProof) public view returns (bool) {
         return merkleProof.verify(_merkleRoot, keccak256(abi.encodePacked(msg.sender)));
     }
@@ -385,12 +519,23 @@ contract __SYMBOL__Ver0 is
     //// Limit
     //////////////////////////////////
 
+    /**
+     * @dev maximum number of tokens to mint per allowlisted member.
+     */
     uint256 public allowlistedMemberMintLimit;
 
+    /**
+     * @dev set maximum number of tokens to mint per allowlisted member.
+     * @param quantity maximum number of tokens to mint per allowlisted member.
+     */
     function setAllowlistedMemberMintLimit(uint256 quantity) external onlyOwner {
         allowlistedMemberMintLimit = quantity;
     }
 
+    /**
+     * @dev check if the given quantity is allowed to mint.
+     * @param quantity quantity to check.
+     */
     modifier checkAllowlistMintLimit(uint256 quantity) {
         require(
             allowlistMemberMintCount(msg.sender) + quantity <= allowlistedMemberMintLimit,
@@ -403,13 +548,29 @@ contract __SYMBOL__Ver0 is
     //// Aux
     //////////////////////////////////
 
+    /**
+     * @dev aux bit mask.
+     */
     uint64 private constant _AUX_BITMASK_ADDRESS_DATA_ENTRY = (1 << 16) - 1;
+
+    /**
+     * @dev aux bit positions.
+     */
     uint64 private constant _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED = 0;
 
+    /**
+     * @dev get number of tokens allowlist-minted by the given address.
+     * @param owner_ address to get number of tokens allowlist-minted.
+     */
     function allowlistMemberMintCount(address owner_) public view returns (uint256) {
         return (_addressData[owner_].aux >> _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) & _AUX_BITMASK_ADDRESS_DATA_ENTRY;
     }
 
+    /**
+     * @dev increment number of tokens allowlist-minted by the given address.
+     * @param owner_ address to increment number of tokens allowlist-minted.
+     * @param quantity quantity to increment.
+     */
     function _incrementAllowlistMemberMintCount(address owner_, uint256 quantity) private {
         require(allowlistMemberMintCount(owner_) + quantity <= _AUX_BITMASK_ADDRESS_DATA_ENTRY, "quantity overflow");
         uint64 one = 1;
@@ -501,12 +662,22 @@ contract __SYMBOL__Ver0 is
     //// Withdraw
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev withdrawal receiver.
+     */
     address private _withdrawalReceiver;
 
+    /**
+     * @dev set withdrawal receiver.
+     * @param receiver withdrawal receiver.
+     */
     function setWithdrawalReceiver(address receiver) external onlyOwner {
         _withdrawalReceiver = receiver;
     }
 
+    /**
+     * @dev withdraw all eth.
+     */
     function withdraw() external onlyOwner {
         uint256 amount = address(this).balance;
         payable(_withdrawalReceiver).transfer(amount);
@@ -516,11 +687,17 @@ contract __SYMBOL__Ver0 is
     //// Utilities
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev check if the given token id exists.
+     */
     modifier checkTokenIdExists(uint256 tokenId) {
         require(_exists(tokenId), "tokenId not exist");
         _;
     }
 
+    /**
+     * @dev convert bytes32 to hex string.
+     */
     function _toHexString(bytes32 data) private pure returns (string memory) {
         uint256 k = uint256(data);
         bytes16 symbols = "0123456789abcdef";
