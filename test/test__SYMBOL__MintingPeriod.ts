@@ -83,7 +83,7 @@ describe("__SYMBOL__ Minting Period", () => {
     it("Can allowlist mint if minting period is not set", async () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
-        const [owner, alice, bob] = await ethers.getSigners()
+        const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
         await instance.setAllowlistPrice(ethers.utils.parseEther("1"))
@@ -114,7 +114,7 @@ describe("__SYMBOL__ Minting Period", () => {
     it("Can't allowlist mint if minting period is not started", async () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
-        const [owner, alice, bob] = await ethers.getSigners()
+        const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
         await instance.setAllowlistPrice(ethers.utils.parseEther("1"))
@@ -139,7 +139,7 @@ describe("__SYMBOL__ Minting Period", () => {
     it("Can't allowlist mint if minting period is ended", async () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
-        const [owner, alice, bob] = await ethers.getSigners()
+        const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
         await instance.setAllowlistPrice(ethers.utils.parseEther("1"))
@@ -164,7 +164,7 @@ describe("__SYMBOL__ Minting Period", () => {
     it("Can allowlist mint if it's in minting period", async () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
-        const [owner, alice, bob] = await ethers.getSigners()
+        const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
         await instance.setAllowlistPrice(ethers.utils.parseEther("1"))
