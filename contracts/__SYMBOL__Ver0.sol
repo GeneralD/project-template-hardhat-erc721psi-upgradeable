@@ -60,7 +60,8 @@ contract __SYMBOL__Ver0 is
         publicPrice = 1 ether;
         allowlistPrice = 0.01 ether;
         allowlistedMemberMintLimit = 1;
-        highestStage = 0;
+        revealTimestamp = 0;
+        _keccakPrefix = "__SYMBOL__";
         _royaltyFraction = 0;
         _royaltyReceiver = msg.sender;
         _withdrawalReceiver = msg.sender;
@@ -252,8 +253,10 @@ contract __SYMBOL__Ver0 is
     function tokenURI(
         uint256 tokenId
     ) public view virtual override checkTokenIdExists(tokenId) returns (string memory) {
-        string memory prefix = _keccakPrefixOf(tokenId);
-        bytes32 keccak = keccak256(abi.encodePacked(prefix, tokenId.toString()));
+        if (revealTimestamp > 0 && block.timestamp < revealTimestamp) {
+            return string(abi.encodePacked(_baseURI(), "seed.json"));
+        }
+        bytes32 keccak = keccak256(abi.encodePacked(_keccakPrefix, tokenId.toString()));
         return string(abi.encodePacked(_baseURI(), _toHexString(keccak), ".json"));
     }
 
@@ -261,78 +264,31 @@ contract __SYMBOL__Ver0 is
     //// Keccak Prefix
     //////////////////////////////////
 
-    /**
-     * @dev mapping from stage to keccak prefix.
-     */
-    mapping(uint256 => string) private _stageToKeccakPrefix;
+    string private _keccakPrefix;
 
     /**
-     * @dev get keccak prefix of the given token id.
-     * @param tokenId token id to get keccak prefix.
+     * @dev set keccak prefix.
+     * @param prefix keccak prefix.
      */
-    function _keccakPrefixOf(uint256 tokenId) private view returns (string memory) {
-        return _stageToKeccakPrefix[_tokenIdToStage[tokenId]];
+    function setKeccakPrefix(string memory prefix) external onlyOwner {
+        _keccakPrefix = prefix;
     }
 
-    /**
-     * @dev set keccak prefix of the given stage.
-     * @param stage stage to set keccak prefix.
-     * @param prefix keccak prefix to set.
-     */
-    function setKeccakPrefix(uint256 stage, string memory prefix) external onlyOwner {
-        _stageToKeccakPrefix[stage] = prefix;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    //// Stage (Something like `Reveal`)
-    ///////////////////////////////////////////////////////////////////
+    //////////////////////////////////
+    //// Reveal
+    //////////////////////////////////
 
     /**
-     * @dev highest stage of the reveal.
+     * @notice reveal timestamp.
      */
-    uint256 public highestStage;
+    uint256 public revealTimestamp;
 
     /**
-     * @dev set highest stage of the reveal.
-     * @param highestStage_ highest stage of the reveal.
+     * @dev set reveal timestamp.
+     * @param timestamp reveal timestamp.
      */
-    function setHighestStage(uint256 highestStage_) external onlyOwner {
-        highestStage = highestStage_;
-    }
-
-    /**
-     * @dev mapping from token id to stage.
-     */
-    mapping(uint256 => uint256) private _tokenIdToStage;
-
-    event StageChanged(uint256 tokenId, uint256 stage);
-
-    /**
-     * @dev get stage of the given token id.
-     * @param tokenId token id to get stage.
-     */
-    function stageOf(uint256 tokenId) external view checkTokenIdExists(tokenId) returns (uint256) {
-        return _tokenIdToStage[tokenId];
-    }
-
-    /**
-     * @dev set stage of the given token id.
-     * @param tokenId token id to set stage.
-     * @param stage stage to set.
-     */
-    function _setStage(uint256 tokenId, uint256 stage) private checkTokenIdExists(tokenId) {
-        require(stage <= highestStage, "stage: too big number");
-        _tokenIdToStage[tokenId] = stage;
-        emit StageChanged(tokenId, stage);
-    }
-
-    /**
-     * @dev set stage of the given token id.
-     * @param tokenId token id to set stage.
-     * @param stage stage to set.
-     */
-    function setStage(uint256 tokenId, uint256 stage) external onlyOwner {
-        _setStage(tokenId, stage);
+    function setRevealTimestamp(uint256 timestamp) external onlyOwner {
+        revealTimestamp = timestamp;
     }
 
     ///////////////////////////////////////////////////////////////////

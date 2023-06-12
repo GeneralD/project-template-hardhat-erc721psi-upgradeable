@@ -1,50 +1,85 @@
-import { expect } from 'chai'
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
-import { ethers, upgrades } from 'hardhat'
-import { describe, it } from 'mocha'
-
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { describe, it } from 'mocha'
+import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
+
+import { expect } from 'chai'
+import { upgrades } from 'hardhat'
 
 describe("__SYMBOL__ TokenURI", () => {
-    it("Check URIs before and after changing stage", async () => {
-        const [_, alice] = await ethers.getSigners()
-
-        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
-
-        await instance.setHighestStage(2)
-        await instance.setMintLimit(10)
-        await instance.setBaseURI("https://sample.com/")
-        await instance.setKeccakPrefix(0, "Before_")
-        await instance.setKeccakPrefix(1, "After_")
-
-        await instance.adminMintTo(alice.address, 4)
-
-        {
-            const hash = keccak256(toUtf8Bytes("Before_3"))
-            expect(hash.startsWith("0x")).to.be.true
-            const name = hash.substring(2)
-
-            expect(await instance.tokenURI(3))
-                .to.equal(`https://sample.com/${name}.json`)
-        }
-
-        await instance.setStage(3, 1)
-
-        {
-            const hash = keccak256(toUtf8Bytes("After_3"))
-            expect(hash.startsWith("0x")).to.be.true
-            const name = hash.substring(2)
-
-            expect(await instance.tokenURI(3))
-                .to.equal(`https://sample.com/${name}.json`)
-        }
-    })
-
     it("Check if TokenURI doesn't end with slash, the value will be reverted", async () => {
         const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
         // URI ends with slash is ok
         await expect(instance.setBaseURI("https://sample.com/")).to.not.be.reverted
         // but URI without slash is not ok
         await expect(instance.setBaseURI("https://sample.com")).to.be.revertedWith("invalid suffix")
+    })
+
+    it("Check if revealTimestamp is not set, always returns individual URI", async () => {
+        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
+        await instance.setMintLimit(10)
+        await instance.setBaseURI("https://sample.com/")
+        await instance.setKeccakPrefix("Ex_")
+
+        await instance.adminMint(5)
+
+        const hash = keccak256(toUtf8Bytes("Ex_3"))
+        expect(hash.startsWith("0x")).to.be.true
+        const name = hash.substring(2)
+
+        expect(await instance.tokenURI(3))
+            .to.equal(`https://sample.com/${name}.json`)
+    })
+
+    it("Check if revealTimestamp is set, returns seed URI before revealTimestamp", async () => {
+        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
+        await instance.setMintLimit(10)
+        await instance.setBaseURI("https://sample.com/")
+        await instance.setKeccakPrefix("Ex_")
+
+        const tommorow = Math.floor(Date.now() / 1000) + 86400
+        await instance.setRevealTimestamp(tommorow)
+
+        await instance.adminMint(5)
+
+        expect(await instance.tokenURI(3))
+            .to.equal(`https://sample.com/seed.json`)
+    })
+
+    it("Check if revealTimestamp is set, returns individual URI after revealTimestamp", async () => {
+        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
+        await instance.setMintLimit(10)
+        await instance.setBaseURI("https://sample.com/")
+        await instance.setKeccakPrefix("Ex_")
+
+        const yesterday = Math.floor(Date.now() / 1000) - 86400
+        await instance.setRevealTimestamp(yesterday)
+
+        await instance.adminMint(5)
+
+        const hash = keccak256(toUtf8Bytes("Ex_3"))
+        expect(hash.startsWith("0x")).to.be.true
+        const name = hash.substring(2)
+
+        expect(await instance.tokenURI(3))
+            .to.equal(`https://sample.com/${name}.json`)
+    })
+
+    it("Check if revealTimestamp means just now, returns individual URI after revealTimestamp", async () => {
+        const instance = await upgrades.deployProxy(await latest__SYMBOL__Factory) as Latest__SYMBOL__
+        await instance.setMintLimit(10)
+        await instance.setBaseURI("https://sample.com/")
+        await instance.setKeccakPrefix("Ex_")
+
+        const now = Math.floor(Date.now() / 1000)
+        await instance.setRevealTimestamp(now)
+
+        await instance.adminMint(5)
+
+        const hash = keccak256(toUtf8Bytes("Ex_3"))
+        expect(hash.startsWith("0x")).to.be.true
+        const name = hash.substring(2)
+
+        expect(await instance.tokenURI(3))
+            .to.equal(`https://sample.com/${name}.json`)
     })
 })

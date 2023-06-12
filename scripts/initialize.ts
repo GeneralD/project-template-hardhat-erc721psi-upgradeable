@@ -1,8 +1,8 @@
-import { parseEther } from 'ethers/lib/utils'
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import env, { ethers } from 'hardhat'
 
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import HardhatRuntimeUtility from '../libraries/HardhatRuntimeUtility'
+import { parseEther } from 'ethers/lib/utils'
 
 async function main() {
     const util = new HardhatRuntimeUtility(env)
@@ -54,9 +54,9 @@ async function main() {
     //// Reveal
     ///////////////////////////////////////////////////////////////////
 
-    await instance.setKeccakPrefix(0, "__SYMBOL___", { nonce: nonce++ })
-    // await instance.setKeccakPrefix(1, "NEXT_", { nonce: nonce++ })
-    await instance.setHighestStage(0, { nonce: nonce++ })
+    await instance.setKeccakPrefix("__SYMBOL___", { nonce: nonce++ })
+    const revealTime = new Date("2023-11-01T00:00:00Z")
+    await instance.setRevealTimestamp(Math.floor(revealTime.getTime() / 1000), { nonce: nonce++ })
 
     ///////////////////////////////////////////////////////////////////
     //// Royalty
