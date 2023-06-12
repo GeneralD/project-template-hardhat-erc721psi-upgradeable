@@ -1,17 +1,16 @@
 import { BigNumber } from 'ethers'
-import { writeFileSync } from 'fs'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { join } from 'path'
-
-import { Latest__SYMBOL__ } from '../libraries/const'
 import HardhatRuntimeUtility from '../libraries/HardhatRuntimeUtility'
+import { Latest__SYMBOL__ } from '../libraries/const'
+import { join } from 'path'
+import { writeFileSync } from 'fs'
 
 export default async (arg: any, env: HardhatRuntimeEnvironment) => {
     const util = new HardhatRuntimeUtility(env)
     const factory = await env.ethers.getContractFactory("__SYMBOL__Ver0")
     const instance = factory.attach((await util.deployedProxy()).address) as Latest__SYMBOL__
 
-    const data = await Promise.all(util.allowlistedAddresses.map(address => instance.allowlistMemberMintCount(address)
+    const data = await Promise.all(util.allowlistedAddresses().map(address => instance.allowlistMemberMintCount(address)
         .then((balance: any) => ({ address, balance }))
         .catch((_: any) => ({ address, balance: BigNumber.from(0) }))
     ))

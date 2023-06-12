@@ -1,8 +1,8 @@
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import env, { ethers } from 'hardhat'
 
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
-import createMerkleRoot from '../libraries/createMerkleRoot'
 import HardhatRuntimeUtility from '../libraries/HardhatRuntimeUtility'
+import createMerkleRoot from '../libraries/createMerkleRoot'
 
 async function main() {
     const util = new HardhatRuntimeUtility(env)
@@ -11,7 +11,7 @@ async function main() {
 
     const [deployer] = await ethers.getSigners()
     let nonce = await ethers.provider.getTransactionCount(deployer.address)
-    await instance.setAllowlist(createMerkleRoot(util.allowlistedAddresses), { nonce: nonce++ })
+    await instance.setAllowlist(createMerkleRoot(util.allowlistedAddresses()), { nonce: nonce++ })
 }
 
 main().catch(error => {

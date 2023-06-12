@@ -14,7 +14,7 @@ export default class {
         this.env = env
     }
 
-    public allowlistedAddresses = [...new Set(
+    public allowlistedAddresses = () => [...new Set(
         process.env.ALLOWLIST_ADDRESSES?.split("\n")
             .filter(address => this.addressRegex.test(address))
             .map(address => this.env.web3.utils.toChecksumAddress(address))
