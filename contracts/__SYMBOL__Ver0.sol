@@ -278,6 +278,8 @@ contract __SYMBOL__Ver0 is
     //// Reveal
     //////////////////////////////////
 
+    event RevealTimestampChanged(uint256 timestamp);
+
     /**
      * @notice reveal timestamp.
      */
@@ -289,6 +291,7 @@ contract __SYMBOL__Ver0 is
      */
     function setRevealTimestamp(uint256 timestamp) external onlyOwner {
         revealTimestamp = timestamp;
+        emit RevealTimestampChanged(timestamp);
     }
 
     ///////////////////////////////////////////////////////////////////
