@@ -1,8 +1,8 @@
-import { expect } from 'chai'
-import { ethers, upgrades } from 'hardhat'
-import { describe, it } from 'mocha'
-
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { describe, it } from 'mocha'
+import { ethers, upgrades } from 'hardhat'
+
+import { expect } from 'chai'
 
 describe("Mint __SYMBOL__ as admin", () => {
   it("Owner can mint in the limit", async () => {
@@ -14,7 +14,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMint(10))
       .to.emit(instance, "Transfer") // just last event can be seen in the test
-      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 9)
+      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 10)
 
     expect(await instance.totalSupply()).to.equal(10)
   })
@@ -28,7 +28,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMintTo(bob.address, 50))
       .to.emit(instance, "Transfer")
-      .withArgs("0x0000000000000000000000000000000000000000", bob.address, 49)
+      .withArgs("0x0000000000000000000000000000000000000000", bob.address, 50)
 
     expect(await instance.balanceOf(bob.address)).to.equal(50)
   })
@@ -54,7 +54,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMint(10))
       .to.emit(instance, "Transfer")
-      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 9)
+      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 10)
 
     expect(await instance.totalSupply()).to.equal(10)
 
@@ -62,10 +62,58 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMintTo(alice.address, 10))
       .to.emit(instance, "Transfer")
-      .withArgs("0x0000000000000000000000000000000000000000", alice.address, 19)
+      .withArgs("0x0000000000000000000000000000000000000000", alice.address, 20)
 
     expect(await instance.totalSupply()).to.equal(20)
-    expect(await instance.ownerOf(10)).to.equal(alice.address)
-    expect(await instance.ownerOf(19)).to.equal(alice.address)
+    expect(await instance.ownerOf(11)).to.equal(alice.address)
+    expect(await instance.ownerOf(20)).to.equal(alice.address)
+  })
+
+  it("Can mint again after the limit is increased", async () => {
+    const [deployer] = await ethers.getSigners()
+
+    const factory = await latest__SYMBOL__Factory
+    const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+    await instance.setMintLimit(20)
+
+    await expect(instance.adminMint(20))
+      .to.emit(instance, "Transfer")
+      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 20)
+
+    expect(await instance.totalSupply())
+      .to.equal(20)
+
+    // check no longer mintable
+    await expect(instance.adminMint(1))
+      .to.be.reverted
+
+    await instance.setMintLimit(35)
+
+    await expect(instance.adminMint(15))
+      .to.emit(instance, "Transfer")
+      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 35)
+
+    expect(await instance.totalSupply())
+      .to.equal(35)
+  })
+
+  it("Can't set the limit to less than the last minted tokenId", async () => {
+    const [deployer] = await ethers.getSigners()
+
+    const factory = await latest__SYMBOL__Factory
+    const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+    await instance.setMintLimit(20)
+
+    await expect(instance.adminMint(20))
+      .to.emit(instance, "Transfer")
+      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 20)
+
+    expect(await instance.totalSupply())
+      .to.equal(20)
+
+    await expect(instance.setMintLimit(19))
+      .to.be.revertedWith("mint limit must be greater than the last token ID")
   })
 })

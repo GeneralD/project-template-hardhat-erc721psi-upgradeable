@@ -19,19 +19,19 @@
 
 pragma solidity >=0.8.18;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@generald/erc721psi/contracts/extension/ERC721PsiAddressDataUpgradeable.sol";
+import "@generald/erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC2981Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
-import "erc721psi/contracts/extension/ERC721PsiAddressDataUpgradeable.sol";
-import "erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 
 contract __SYMBOL__Ver0 is
     ERC721PsiAddressDataUpgradeable,
     ERC721PsiBurnableUpgradeable,
     RevokableDefaultOperatorFiltererUpgradeable,
-    OwnableUpgradeable,
+    Ownable2StepUpgradeable,
     IERC2981Upgradeable
 {
     using MerkleProofUpgradeable for bytes32[];
@@ -48,7 +48,7 @@ contract __SYMBOL__Ver0 is
     function initialize() public initializer {
         __ERC721Psi_init("$$Token Name$$", "__SYMBOL__");
         __RevokableDefaultOperatorFilterer_init();
-        __Ownable_init();
+        __Ownable2Step_init();
 
         // Set correct values from deploy script, below are just list of variables to remind us what to set!
         baseURI = "/";
@@ -109,6 +109,10 @@ contract __SYMBOL__Ver0 is
         return super.totalSupply();
     }
 
+    function _startTokenId() internal pure virtual override returns (uint256) {
+        return 1;
+    }
+
     ///////////////////////////////////////////////////////////////////
     //// Ownable
     ///////////////////////////////////////////////////////////////////
@@ -166,6 +170,7 @@ contract __SYMBOL__Ver0 is
      * @dev set royalty in percentage x 100. e.g. 5% should be 500.
      */
     function setRoyaltyFraction(uint96 royaltyFraction) external onlyOwner {
+        require(royaltyFraction <= 1_000, "royalty fraction exceeds the limit"); // 10%
         _royaltyFraction = royaltyFraction;
     }
 
@@ -254,10 +259,10 @@ contract __SYMBOL__Ver0 is
         uint256 tokenId
     ) public view virtual override checkTokenIdExists(tokenId) returns (string memory) {
         if (revealTimestamp > 0 && block.timestamp < revealTimestamp) {
-            return string(abi.encodePacked(_baseURI(), "seed.json"));
+            return string(abi.encodePacked(baseURI, "seed.json"));
         }
         bytes32 keccak = keccak256(abi.encodePacked(_keccakPrefix, tokenId.toString()));
-        return string(abi.encodePacked(_baseURI(), _toHexString(keccak), ".json"));
+        return string(abi.encodePacked(baseURI, _toHexString(keccak), ".json"));
     }
 
     //////////////////////////////////
@@ -311,6 +316,14 @@ contract __SYMBOL__Ver0 is
     //// Minting Tokens
     ///////////////////////////////////////////////////////////////////
 
+    /**
+     * @dev check if the sender is not a contract.
+     */
+    modifier checkSender() {
+        require(tx.origin == msg.sender, "minting from contract is not allowed");
+        _;
+    }
+
     //////////////////////////////////
     //// Admin Mint
     //////////////////////////////////
@@ -319,8 +332,8 @@ contract __SYMBOL__Ver0 is
      * @dev mint the given quantity to the given address.
      * @param quantity quantity to mint.
      */
-    function adminMint(uint256 quantity) external onlyOwner checkMintLimit(quantity) {
-        _safeMint(msg.sender, quantity);
+    function adminMint(uint256 quantity) external onlyOwner checkMintQuantity(quantity) {
+        _mint(msg.sender, quantity);
     }
 
     /**
@@ -328,8 +341,8 @@ contract __SYMBOL__Ver0 is
      * @param to address to mint.
      * @param quantity quantity to mint.
      */
-    function adminMintTo(address to, uint256 quantity) external onlyOwner checkMintLimit(quantity) {
-        _safeMint(to, quantity);
+    function adminMintTo(address to, uint256 quantity) external onlyOwner checkMintQuantity(quantity) {
+        _mint(to, quantity);
     }
 
     //////////////////////////////////
@@ -342,8 +355,15 @@ contract __SYMBOL__Ver0 is
      */
     function publicMint(
         uint256 quantity
-    ) external payable whenPublicMintingAvailable checkMintLimit(quantity) checkPay(publicPrice, quantity) {
-        _safeMint(msg.sender, quantity);
+    )
+        external
+        payable
+        checkSender
+        whenPublicMintingAvailable
+        checkMintQuantity(quantity)
+        checkPay(publicPrice, quantity)
+    {
+        _mint(msg.sender, quantity);
     }
 
     //////////////////////////////////
@@ -361,14 +381,15 @@ contract __SYMBOL__Ver0 is
     )
         external
         payable
+        checkSender
         whenAllowlistMintingAvailable
         checkAllowlist(merkleProof)
         checkAllowlistMintLimit(quantity)
-        checkMintLimit(quantity)
+        checkMintQuantity(quantity)
         checkPay(allowlistPrice, quantity)
     {
         _incrementAllowlistMemberMintCount(msg.sender, quantity);
-        _safeMint(msg.sender, quantity);
+        _mint(msg.sender, quantity);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -384,10 +405,12 @@ contract __SYMBOL__Ver0 is
      * @dev get maximum number of tokens to mint.
      */
     function setMintLimit(uint256 _mintLimit) external onlyOwner {
+        require(_mintLimit >= _nextTokenId(), "mint limit must be greater than the last token ID");
         mintLimit = _mintLimit;
     }
 
-    modifier checkMintLimit(uint256 quantity) {
+    modifier checkMintQuantity(uint256 quantity) {
+        require(quantity > 0, "minting quantity must be greater than 0");
         require(_totalMinted() + quantity <= mintLimit, "minting exceeds the limit");
         _;
     }
@@ -402,7 +425,7 @@ contract __SYMBOL__Ver0 is
      * @param quantity quantity to check.
      */
     modifier checkPay(uint256 price, uint256 quantity) {
-        require(msg.value >= price * quantity, "not enough eth");
+        require(msg.value == price * quantity, "invalid amount of eth sent");
         _;
     }
 
@@ -637,11 +660,11 @@ contract __SYMBOL__Ver0 is
     }
 
     /**
-     * @dev withdraw all eth.
+     * @dev Withdraw the balance.
      */
-    function withdraw() external onlyOwner {
+    function withdraw() external onlyOwner returns (bool success) {
         uint256 amount = address(this).balance;
-        payable(_withdrawalReceiver).transfer(amount);
+        (success, ) = payable(_withdrawalReceiver).call{value: amount}(new bytes(0));
     }
 
     ///////////////////////////////////////////////////////////////////

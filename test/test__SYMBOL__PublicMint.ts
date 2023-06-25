@@ -1,8 +1,8 @@
-import { expect } from 'chai'
-import { ethers, upgrades } from 'hardhat'
-import { describe, it } from 'mocha'
-
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { describe, it } from 'mocha'
+import { ethers, upgrades } from 'hardhat'
+
+import { expect } from 'chai'
 
 describe("__SYMBOL__ Public Minting", () => {
     it("Can public mint", async () => {
@@ -65,6 +65,6 @@ describe("__SYMBOL__ Public Minting", () => {
         // try to mint without enough ETH
         const paid = totalPrice.mul(99).div(100) // 99% of total price
         await expect(instance.connect(john).publicMint(quantity, { value: paid }))
-            .to.revertedWith("not enough eth")
+            .to.revertedWith("invalid amount of eth sent")
     })
 })

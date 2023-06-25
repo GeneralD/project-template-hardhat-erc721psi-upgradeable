@@ -1,10 +1,10 @@
-import { expect } from 'chai'
-import { keccak256, parseEther } from 'ethers/lib/utils'
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import { ethers, upgrades } from 'hardhat'
+import { keccak256, parseEther } from 'ethers/lib/utils'
+
 import MerkleTree from 'merkletreejs'
 import { describe } from 'mocha'
-
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { expect } from 'chai'
 
 describe("Mint __SYMBOL__ as allowlisted member", () => {
     it("Allowlisted member can mint", async () => {
@@ -159,6 +159,36 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         const proof = tree.getHexProof(keccak256(john.address))
         const paid = totalPrice.mul(99).div(100) // 99% of total price
         await expect(instance.connect(john).allowlistMint(quantity, proof, { value: paid }))
-            .to.revertedWith("not enough eth")
+            .to.revertedWith("invalid amount of eth sent")
+    })
+
+    it("Cannot mint if too much ETH is sent", async () => {
+        const factory = await latest__SYMBOL__Factory
+        const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+        const [, john, jonny, jonathan] = await ethers.getSigners()
+
+        await instance.setMintLimit(100)
+        await instance.setAllowlistedMemberMintLimit(5)
+
+        // register allowlist
+        const allowlisted = [john, jonny, jonathan]
+        const leaves = allowlisted.map(account => keccak256(account.address))
+        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const root = tree.getHexRoot()
+        await instance.setAllowlist(root)
+
+        // check balance to mint
+        const price = await instance.allowlistPrice()
+        const quantity = await instance.allowlistedMemberMintLimit()
+        const totalPrice = price.mul(quantity)
+        const balance = await john.getBalance()
+        expect(balance.gte(totalPrice)).is.true
+
+        // try to mint without enough ETH
+        const proof = tree.getHexProof(keccak256(john.address))
+        const paid = totalPrice.mul(101).div(100) // 101% of total price
+        await expect(instance.connect(john).allowlistMint(quantity, proof, { value: paid }))
+            .to.revertedWith("invalid amount of eth sent")
     })
 })

@@ -697,6 +697,15 @@
   optionalDependencies:
     "@trufflesuite/bigint-buffer" "1.1.9"
 
+"@generald/erc721psi@git+ssh://git@github.com:GeneralD/ERC721Psi.git#main":
+  version "0.7.0"
+  resolved "git+ssh://git@github.com:GeneralD/ERC721Psi.git#59c61d8619caf814e4d7325f98f7c92da3250d56"
+  dependencies:
+    "@chainlink/contracts" "^0.4.0"
+    "@openzeppelin/contracts" "^4.4.2"
+    "@openzeppelin/contracts-upgradeable" "^4.5.1"
+    solidity-bits "^0.3.2"
+
 "@humanwhocodes/config-array@^0.11.8":
   version "0.11.8"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.8.tgz#03595ac2075a4dc0f191cc2131de14fbd7d410b9"
@@ -3145,16 +3154,6 @@ env-paths@^2.2.0:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/env-paths/-/env-paths-2.2.1.tgz#420399d416ce1fbe9bc0a07c62fa68d67fd0f8f2"
   integrity sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==
-
-erc721psi@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/erc721psi/-/erc721psi-0.7.0.tgz#dc2e6f4c1903db3aeac86ee3b84d48f3a0f71cce"
-  integrity sha512-FUtEpEOrjEonaZ3FgRniDTJLFWqdCYTDGwKSKtkKKZhFJfRCcCpCREn9MzK/hjbseXnU8pRt7ott9mbSdmGULw==
-  dependencies:
-    "@chainlink/contracts" "^0.4.0"
-    "@openzeppelin/contracts" "^4.4.2"
-    "@openzeppelin/contracts-upgradeable" "^4.5.1"
-    solidity-bits "^0.3.2"
 
 errno@~0.1.1:
   version "0.1.8"

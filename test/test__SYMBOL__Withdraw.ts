@@ -1,8 +1,8 @@
-import { expect } from 'chai'
-import { ethers, upgrades } from 'hardhat'
-import { describe } from 'mocha'
-
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { ethers, upgrades } from 'hardhat'
+
+import { describe } from 'mocha'
+import { expect } from 'chai'
 
 describe("Withdraw from __SYMBOL__", () => {
     it("Withdraw all", async () => {
@@ -32,13 +32,13 @@ describe("Withdraw from __SYMBOL__", () => {
     })
 
     it("Nobody can withdraw other than owner", async () => {
-        const [, badguy] = await ethers.getSigners()
+        const [, , , , , , , , mallory] = await ethers.getSigners()
 
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
 
         await instance.withdraw() // ok
-        await expect(instance.connect(badguy).withdraw()).to.revertedWith("Ownable: caller is not the owner")
+        await expect(instance.connect(mallory).withdraw()).to.revertedWith("Ownable: caller is not the owner")
     })
 
     it("Withdrawal receiver receives all", async () => {

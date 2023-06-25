@@ -1,8 +1,8 @@
-import { expect } from 'chai'
-import { ethers, upgrades } from 'hardhat'
-import { describe, it } from 'mocha'
-
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { describe, it } from 'mocha'
+import { ethers, upgrades } from 'hardhat'
+
+import { expect } from 'chai'
 
 describe("Burn __SYMBOL__", () => {
   it("Owner can burn then totalSupply decreased", async () => {
@@ -56,21 +56,21 @@ describe("Burn __SYMBOL__", () => {
 
     await expect(instance.adminMint(5))
       .to.emit(instance, "Transfer")
-      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 4)
+      .withArgs("0x0000000000000000000000000000000000000000", deployer.address, 5)
 
     expect(await instance.totalSupply()).to.equal(5)
 
-    await expect(await instance.burn(0))
-      .to.emit(instance, "Transfer")
-      .withArgs(deployer.address, "0x0000000000000000000000000000000000000000", 0)
-
-    await expect(instance.burn(1))
+    await expect(await instance.burn(1))
       .to.emit(instance, "Transfer")
       .withArgs(deployer.address, "0x0000000000000000000000000000000000000000", 1)
 
     await expect(instance.burn(2))
       .to.emit(instance, "Transfer")
       .withArgs(deployer.address, "0x0000000000000000000000000000000000000000", 2)
+
+    await expect(instance.burn(3))
+      .to.emit(instance, "Transfer")
+      .withArgs(deployer.address, "0x0000000000000000000000000000000000000000", 3)
 
     expect(await instance.totalSupply()).to.equal(2)
     // burn reduces totalSupply but does't release space for future mint
@@ -97,17 +97,17 @@ describe("Burn __SYMBOL__", () => {
     await instance.setMintLimit(3)
     await expect(instance.adminMintTo(alice.address, 3))
       .to.emit(instance, "Transfer")
-      .withArgs("0x0000000000000000000000000000000000000000", alice.address, 2)
+      .withArgs("0x0000000000000000000000000000000000000000", alice.address, 3)
 
-    await expect(instance.burn(0))
-      .to.emit(instance, "Transfer")
-      .withArgs(alice.address, "0x0000000000000000000000000000000000000000", 0)
-
-    await expect(instance.connect(alice).burn(1))
+    await expect(instance.burn(1))
       .to.emit(instance, "Transfer")
       .withArgs(alice.address, "0x0000000000000000000000000000000000000000", 1)
 
-    await expect(instance.connect(mallory).burn(2))
+    await expect(instance.connect(alice).burn(2))
+      .to.emit(instance, "Transfer")
+      .withArgs(alice.address, "0x0000000000000000000000000000000000000000", 2)
+
+    await expect(instance.connect(mallory).burn(3))
       .to.be.reverted
   })
 })
