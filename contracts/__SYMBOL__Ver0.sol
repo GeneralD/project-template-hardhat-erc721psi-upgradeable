@@ -19,7 +19,6 @@
 
 pragma solidity >=0.8.18;
 
-import "@generald/erc721psi/contracts/extension/ERC721PsiAddressDataUpgradeable.sol";
 import "@generald/erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC2981Upgradeable.sol";
@@ -28,7 +27,6 @@ import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 
 contract __SYMBOL__Ver0 is
-    ERC721PsiAddressDataUpgradeable,
     ERC721PsiBurnableUpgradeable,
     RevokableDefaultOperatorFiltererUpgradeable,
     Ownable2StepUpgradeable,
@@ -76,37 +74,6 @@ contract __SYMBOL__Ver0 is
         // We implemented ERC2981 by ourselves without inheriting one of the implementation that OpenZeppelin provides,
         // so we need to add it to the list of supported interfaces here.
         return interfaceId == type(IERC2981Upgradeable).interfaceId || super.supportsInterface(interfaceId);
-    }
-
-    function _afterTokenTransfers(
-        address from,
-        address to,
-        uint256 startTokenId,
-        uint256 quantity
-    ) internal virtual override(ERC721PsiAddressDataUpgradeable, ERC721PsiUpgradeable) {
-        super._afterTokenTransfers(from, to, startTokenId, quantity);
-    }
-
-    function _exists(
-        uint256 tokenId
-    ) internal view virtual override(ERC721PsiBurnableUpgradeable, ERC721PsiUpgradeable) returns (bool) {
-        return super._exists(tokenId);
-    }
-
-    function balanceOf(
-        address owner_
-    ) public view virtual override(ERC721PsiAddressDataUpgradeable, ERC721PsiUpgradeable) returns (uint) {
-        return super.balanceOf(owner_);
-    }
-
-    function totalSupply()
-        public
-        view
-        virtual
-        override(ERC721PsiBurnableUpgradeable, ERC721PsiUpgradeable)
-        returns (uint256)
-    {
-        return super.totalSupply();
     }
 
     function _startTokenId() internal pure virtual override returns (uint256) {
@@ -371,6 +338,43 @@ contract __SYMBOL__Ver0 is
     //////////////////////////////////
 
     /**
+     * @dev The ID of the allowlist sale.
+     */
+    uint256 public allowlistSaleId;
+
+    /**
+     * @dev Increment the allowlist sale ID.
+     */
+    function incrementAllowlistSaleId() external onlyOwner {
+        allowlistSaleId++;
+    }
+
+    /**
+     * @dev The number of tokens minted in the allowlist minting for each address and sale ID.
+     * Solidity does not support iterating over a mapping and clearing all entries.
+     * Additionally iterating to erase all entries with another mapping to remember keys is expensive.
+     * So we use a mapping of mapping to switch (reset) the mapping.
+     */
+    mapping(uint256 => mapping(address => uint256)) private _allowlistSaleIdToMemberMintCount;
+
+    /**
+     * @dev The number of tokens minted in the allowlist minting for the specified address.
+     * @param member The address to check the number of tokens minted in the allowlist minting.
+     */
+    function allowlistMemberMintCount(address member) public view returns (uint256) {
+        return _allowlistSaleIdToMemberMintCount[allowlistSaleId][member];
+    }
+
+    /**
+     * @dev Count up the number of tokens minted in the allowlist minting for the specified address.
+     * @param member The address to count up the number of tokens minted in the allowlist minting.
+     * @param quantity The number of tokens to mint.
+     */
+    function _incrementAllowlistMemberMintCount(address member, uint256 quantity) private {
+        _allowlistSaleIdToMemberMintCount[allowlistSaleId][member] += quantity;
+    }
+
+    /**
      * @dev mint the given quantity to the given address.
      * @param quantity quantity to mint.
      * @param merkleProof merkle proof to check.
@@ -524,40 +528,6 @@ contract __SYMBOL__Ver0 is
             "allowlist minting exceeds the limit"
         );
         _;
-    }
-
-    //////////////////////////////////
-    //// Aux
-    //////////////////////////////////
-
-    /**
-     * @dev aux bit mask.
-     */
-    uint64 private constant _AUX_BITMASK_ADDRESS_DATA_ENTRY = (1 << 16) - 1;
-
-    /**
-     * @dev aux bit positions.
-     */
-    uint64 private constant _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED = 0;
-
-    /**
-     * @dev get number of tokens allowlist-minted by the given address.
-     * @param owner_ address to get number of tokens allowlist-minted.
-     */
-    function allowlistMemberMintCount(address owner_) public view returns (uint256) {
-        return (_addressData[owner_].aux >> _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) & _AUX_BITMASK_ADDRESS_DATA_ENTRY;
-    }
-
-    /**
-     * @dev increment number of tokens allowlist-minted by the given address.
-     * @param owner_ address to increment number of tokens allowlist-minted.
-     * @param quantity quantity to increment.
-     */
-    function _incrementAllowlistMemberMintCount(address owner_, uint256 quantity) private {
-        require(allowlistMemberMintCount(owner_) + quantity <= _AUX_BITMASK_ADDRESS_DATA_ENTRY, "quantity overflow");
-        uint64 one = 1;
-        uint64 aux = _addressData[owner_].aux + uint64(quantity) * ((one << _AUX_BITPOS_NUMBER_ALLOWLIST_MINTED) | one);
-        _addressData[owner_].aux = aux;
     }
 
     ///////////////////////////////////////////////////////////////////

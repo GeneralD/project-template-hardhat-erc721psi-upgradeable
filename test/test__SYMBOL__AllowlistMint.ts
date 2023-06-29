@@ -6,7 +6,7 @@ import MerkleTree from 'merkletreejs'
 import { describe } from 'mocha'
 import { expect } from 'chai'
 
-describe("Mint __SYMBOL__ as allowlisted member", () => {
+describe("Mint ALC as allowlisted member", () => {
     it("Allowlisted member can mint", async () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
@@ -104,6 +104,49 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
             .to.equal(quantity)
     })
 
+    it("Allowlisted member exceeding the limit of allowlist mint can mint after the sale id is changed", async () => {
+        const factory = await latest__SYMBOL__Factory
+        const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+        const [, john, jonny, jonathan] = await ethers.getSigners()
+
+        await instance.setMintLimit(100)
+        await instance.setAllowlistedMemberMintLimit(5)
+
+        // register allowlist
+        const allowlisted = [john, jonny, jonathan]
+        const leaves = allowlisted.map(account => keccak256(account.address))
+        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const root = tree.getHexRoot()
+        await instance.setAllowlist(root)
+
+        // check balance to mint
+        const price = await instance.allowlistPrice()
+        const quantity = await instance.allowlistedMemberMintLimit()
+        const totalPrice = price.mul(quantity)
+        const balance = await jonathan.getBalance()
+        expect(balance.gte(totalPrice)).is.true
+
+        const proofOfJonathan = tree.getHexProof(keccak256(jonathan.address))
+        await expect(await instance.connect(jonathan).allowlistMint(quantity, proofOfJonathan, { value: totalPrice }))
+            .to.changeEtherBalances([instance, jonathan], [totalPrice, totalPrice.mul(-1)])
+
+        expect(await instance.allowlistMemberMintCount(jonathan.address))
+            .to.equal(quantity)
+
+        // try to mint more and fail
+        await expect(instance.connect(jonathan).allowlistMint(quantity, proofOfJonathan, { value: totalPrice }))
+            .to.be.revertedWith("allowlist minting exceeds the limit")
+
+        await instance.incrementAllowlistSaleId()
+
+        // now jonathan can mint again
+        await instance.connect(jonathan).allowlistMint(quantity, proofOfJonathan, { value: totalPrice })
+
+        expect(await instance.allowlistMemberMintCount(jonathan.address))
+            .to.equal(quantity)
+    })
+
     it("Allowlisted member can mint in allowlist mint limit but not over the limit of entire contract", async () => {
         const factory = await latest__SYMBOL__Factory
         const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
@@ -190,5 +233,15 @@ describe("Mint __SYMBOL__ as allowlisted member", () => {
         const paid = totalPrice.mul(101).div(100) // 101% of total price
         await expect(instance.connect(john).allowlistMint(quantity, proof, { value: paid }))
             .to.revertedWith("invalid amount of eth sent")
+    })
+
+    it("Only contract owner can increment allowlist sale id", async () => {
+        const factory = await latest__SYMBOL__Factory
+        const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+        const [, john] = await ethers.getSigners()
+
+        await expect(instance.connect(john).incrementAllowlistSaleId())
+            .to.be.revertedWith("Ownable: caller is not the owner")
     })
 })
