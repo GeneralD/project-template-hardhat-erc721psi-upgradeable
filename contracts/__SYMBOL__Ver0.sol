@@ -58,8 +58,9 @@ contract __SYMBOL__Ver0 is
         publicPrice = 1 ether;
         allowlistPrice = 0.01 ether;
         allowlistedMemberMintLimit = 1;
+        allowlistSaleId = 0;
         revealTimestamp = 0;
-        _keccakPrefix = "__SYMBOL__";
+        _keccakPrefix = "__SYMBOL___";
         _royaltyFraction = 0;
         _royaltyReceiver = msg.sender;
         _withdrawalReceiver = msg.sender;
@@ -632,9 +633,10 @@ contract __SYMBOL__Ver0 is
     /**
      * @dev Withdraw the balance.
      */
-    function withdraw() external onlyOwner returns (bool success) {
+    function withdraw() external onlyOwner {
         uint256 amount = address(this).balance;
-        (success, ) = payable(_withdrawalReceiver).call{value: amount}(new bytes(0));
+        (bool success, ) = payable(_withdrawalReceiver).call{value: amount}(new bytes(0));
+        if (!success) revert("withdrawal failed");
     }
 
     ///////////////////////////////////////////////////////////////////
