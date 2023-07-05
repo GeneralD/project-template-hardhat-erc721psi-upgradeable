@@ -697,7 +697,7 @@
   optionalDependencies:
     "@trufflesuite/bigint-buffer" "1.1.9"
 
-"@generald/erc721psi@git+ssh://git@github.com:GeneralD/ERC721Psi.git#main":
+"@generald/erc721psi@git+ssh://git@github.com:GeneralD/ERC721Psi.git#1.0.0":
   version "0.7.0"
   resolved "git+ssh://git@github.com:GeneralD/ERC721Psi.git#59c61d8619caf814e4d7325f98f7c92da3250d56"
   dependencies:
