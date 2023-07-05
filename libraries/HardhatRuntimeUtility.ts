@@ -1,4 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { constants } from 'ethers'
 
 export type Proxie = {
     address: string
@@ -36,7 +37,7 @@ export default class {
             // so need to check if the proxy is currently on chain.
             if (this.env.network.name == 'localhost') {
                 const adminAddresses = await Promise.all(proxies.map(proxy => this.env.upgrades.erc1967.getAdminAddress(proxy.address)))
-                return !adminAddresses.includes("0x0000000000000000000000000000000000000000")
+                return !adminAddresses.includes(constants.AddressZero)
             }
             return true
         } catch {

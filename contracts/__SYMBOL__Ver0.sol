@@ -339,43 +339,6 @@ contract __SYMBOL__Ver0 is
     //////////////////////////////////
 
     /**
-     * @dev The ID of the allowlist sale.
-     */
-    uint256 public allowlistSaleId;
-
-    /**
-     * @dev Increment the allowlist sale ID.
-     */
-    function incrementAllowlistSaleId() external onlyOwner {
-        allowlistSaleId++;
-    }
-
-    /**
-     * @dev The number of tokens minted in the allowlist minting for each address and sale ID.
-     * Solidity does not support iterating over a mapping and clearing all entries.
-     * Additionally iterating to erase all entries with another mapping to remember keys is expensive.
-     * So we use a mapping of mapping to switch (reset) the mapping.
-     */
-    mapping(uint256 => mapping(address => uint256)) private _allowlistSaleIdToMemberMintCount;
-
-    /**
-     * @dev The number of tokens minted in the allowlist minting for the specified address.
-     * @param member The address to check the number of tokens minted in the allowlist minting.
-     */
-    function allowlistMemberMintCount(address member) public view returns (uint256) {
-        return _allowlistSaleIdToMemberMintCount[allowlistSaleId][member];
-    }
-
-    /**
-     * @dev Count up the number of tokens minted in the allowlist minting for the specified address.
-     * @param member The address to count up the number of tokens minted in the allowlist minting.
-     * @param quantity The number of tokens to mint.
-     */
-    function _incrementAllowlistMemberMintCount(address member, uint256 quantity) private {
-        _allowlistSaleIdToMemberMintCount[allowlistSaleId][member] += quantity;
-    }
-
-    /**
      * @dev mint the given quantity to the given address.
      * @param quantity quantity to mint.
      * @param merkleProof merkle proof to check.
@@ -417,6 +380,72 @@ contract __SYMBOL__Ver0 is
     modifier checkMintQuantity(uint256 quantity) {
         require(quantity > 0, "minting quantity must be greater than 0");
         require(_totalMinted() + quantity <= mintLimit, "minting exceeds the limit");
+        _;
+    }
+
+    //////////////////////////////////
+    //// Allowlist
+    //////////////////////////////////
+
+    /**
+     * @dev The ID of the allowlist sale.
+     */
+    uint256 public allowlistSaleId;
+
+    /**
+     * @dev Increment the allowlist sale ID.
+     */
+    function incrementAllowlistSaleId() external onlyOwner {
+        allowlistSaleId++;
+    }
+
+    /**
+     * @dev The number of tokens minted in the allowlist minting for each address and sale ID.
+     * Solidity does not support iterating over a mapping and clearing all entries.
+     * Additionally iterating to erase all entries with another mapping to remember keys is expensive.
+     * So we use a mapping of mapping to switch (reset) the mapping.
+     */
+    mapping(uint256 => mapping(address => uint256)) private _allowlistSaleIdToMemberMintCount;
+
+    /**
+     * @dev The number of tokens minted in the allowlist minting for the specified address.
+     * @param member The address to check the number of tokens minted in the allowlist minting.
+     */
+    function allowlistMemberMintCount(address member) public view returns (uint256) {
+        return _allowlistSaleIdToMemberMintCount[allowlistSaleId][member];
+    }
+
+    /**
+     * @dev Count up the number of tokens minted in the allowlist minting for the specified address.
+     * @param member The address to count up the number of tokens minted in the allowlist minting.
+     * @param quantity The number of tokens to mint.
+     */
+    function _incrementAllowlistMemberMintCount(address member, uint256 quantity) private {
+        _allowlistSaleIdToMemberMintCount[allowlistSaleId][member] += quantity;
+    }
+
+    /**
+     * @dev maximum number of tokens to mint per allowlisted member.
+     */
+    uint256 public allowlistedMemberMintLimit;
+
+    /**
+     * @dev set maximum number of tokens to mint per allowlisted member.
+     * @param quantity maximum number of tokens to mint per allowlisted member.
+     */
+    function setAllowlistedMemberMintLimit(uint256 quantity) external onlyOwner {
+        allowlistedMemberMintLimit = quantity;
+    }
+
+    /**
+     * @dev check if the given quantity is allowed to mint.
+     * @param quantity quantity to check.
+     */
+    modifier checkAllowlistMintLimit(uint256 quantity) {
+        require(
+            allowlistMemberMintCount(msg.sender) + quantity <= allowlistedMemberMintLimit,
+            "allowlist minting exceeds the limit"
+        );
         _;
     }
 
@@ -469,24 +498,24 @@ contract __SYMBOL__Ver0 is
     }
 
     ///////////////////////////////////////////////////////////////////
-    //// Allowlist
+    //// Member Verification
     ///////////////////////////////////////////////////////////////////
 
     //////////////////////////////////
-    //// Verification
+    //// Allowlist
     //////////////////////////////////
 
     /**
      * @dev merkle root of the allowlist.
      */
-    bytes32 private _merkleRoot;
+    bytes32 private _allowlistMerkleRoot;
 
     /**
      * @dev set merkle root of the allowlist.
      * @param merkleRoot merkle root of the allowlist.
      */
     function setAllowlist(bytes32 merkleRoot) external onlyOwner {
-        _merkleRoot = merkleRoot;
+        _allowlistMerkleRoot = merkleRoot;
     }
 
     /**
@@ -494,40 +523,11 @@ contract __SYMBOL__Ver0 is
      * @param merkleProof merkle proof to check.
      */
     function isAllowlisted(bytes32[] calldata merkleProof) public view returns (bool) {
-        return merkleProof.verify(_merkleRoot, keccak256(abi.encodePacked(msg.sender)));
+        return merkleProof.verify(_allowlistMerkleRoot, keccak256(abi.encodePacked(msg.sender)));
     }
 
     modifier checkAllowlist(bytes32[] calldata merkleProof) {
         require(isAllowlisted(merkleProof), "invalid merkle proof");
-        _;
-    }
-
-    //////////////////////////////////
-    //// Limit
-    //////////////////////////////////
-
-    /**
-     * @dev maximum number of tokens to mint per allowlisted member.
-     */
-    uint256 public allowlistedMemberMintLimit;
-
-    /**
-     * @dev set maximum number of tokens to mint per allowlisted member.
-     * @param quantity maximum number of tokens to mint per allowlisted member.
-     */
-    function setAllowlistedMemberMintLimit(uint256 quantity) external onlyOwner {
-        allowlistedMemberMintLimit = quantity;
-    }
-
-    /**
-     * @dev check if the given quantity is allowed to mint.
-     * @param quantity quantity to check.
-     */
-    modifier checkAllowlistMintLimit(uint256 quantity) {
-        require(
-            allowlistMemberMintCount(msg.sender) + quantity <= allowlistedMemberMintLimit,
-            "allowlist minting exceeds the limit"
-        );
         _;
     }
 

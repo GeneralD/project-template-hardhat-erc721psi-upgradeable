@@ -1,10 +1,15 @@
+import {
+    Network,
+    OwnedNft,
+    getNftsForOwner,
+    getOwnersForCollection,
+    initializeAlchemy
+} from '@alch/alchemy-sdk'
+
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import ObjectsToCsv from 'objects-to-csv'
+import { constants } from 'ethers'
 import { join } from 'path'
-
-import {
-    getNftsForOwner, getOwnersForCollection, initializeAlchemy, Network, OwnedNft
-} from '@alch/alchemy-sdk'
 
 export default async (arg: any, env: HardhatRuntimeEnvironment) => {
     const alchemy = initializeAlchemy({
@@ -18,7 +23,7 @@ export default async (arg: any, env: HardhatRuntimeEnvironment) => {
 
     const ownersResponse = await getOwnersForCollection(alchemy, contractAddress)
     // filter to exclude burnt (zero address)
-    const owners = ownersResponse.owners.filter(owner => owner !== "0x0000000000000000000000000000000000000000")
+    const owners = ownersResponse.owners.filter(owner => owner !== constants.AddressZero)
 
     const rows: { address: string, balance: number }[] = []
     for (const owner of owners) {

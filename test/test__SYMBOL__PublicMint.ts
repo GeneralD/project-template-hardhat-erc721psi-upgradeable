@@ -2,6 +2,7 @@ import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import { describe, it } from 'mocha'
 import { ethers, upgrades } from 'hardhat'
 
+import { constants } from 'ethers'
 import { expect } from 'chai'
 
 describe("__SYMBOL__ Public Minting", () => {
@@ -22,12 +23,12 @@ describe("__SYMBOL__ Public Minting", () => {
         await expect(instance.connect(john).publicMint(quantity, { value: totalPrice }))
             // can check only an event per an 'expect' expression, but 1000 events were emitted
             .to.emit(instance, "Transfer")
-            .withArgs("0x0000000000000000000000000000000000000000", john.address, quantity - 1)
+            .withArgs(constants.AddressZero, john.address, quantity)
 
         expect(await instance.totalSupply()).to.equal(quantity)
         expect(await instance.balanceOf(john.address)).to.equal(quantity)
         expect(await instance.ownerOf(1)).to.equal(john.address)
-        expect(await instance.ownerOf(quantity - 1)).to.equal(john.address)
+        expect(await instance.ownerOf(quantity)).to.equal(john.address)
     })
 
     it("Can't public-mint over the limit", async () => {
