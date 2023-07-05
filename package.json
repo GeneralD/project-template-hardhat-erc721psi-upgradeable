@@ -54,6 +54,7 @@
     "serve": "hardhat node",
     "test": "hardhat test",
     "coverage": "hardhat coverage",
-    "verify": "hardhat verify"
+    "verify": "hardhat verify",
+    "balance": "hardhat balance"
   }
 }

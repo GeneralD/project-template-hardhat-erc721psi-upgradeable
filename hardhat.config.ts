@@ -7,8 +7,10 @@ import 'hardhat-gas-reporter'
 import 'solidity-coverage'
 
 import * as dotenv from 'dotenv'
+
 import { HardhatUserConfig, task } from 'hardhat/config'
 
+import checkBalance from './tasks/checkBalance'
 import exportAllowlistMintCSV from './tasks/exportAllowlistMintCSV'
 import exportHashedAllowlistJsonTask from './tasks/exportHashedAllowlistJsonTask'
 import snapshotTask from './tasks/snapshotTask'
@@ -22,6 +24,10 @@ task("accounts")
     const accounts = await env.ethers.getSigners()
     for (const account of accounts) console.log(account.address)
   })
+
+task("balance")
+  .setDescription("Prints the balance of an account")
+  .setAction(checkBalance)
 
 task("verifyEtherscan")
   .setDescription("alternative verify task but sets arguments automatically")
