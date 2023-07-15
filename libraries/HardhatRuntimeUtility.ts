@@ -22,8 +22,14 @@ export default class {
     )]
 
     public deployedProxies = async (numberOfProxies: number) => {
+        const noProxyError = new Error("proxy is not deployed yet")
+        try {
+            await import(`../.openzeppelin/${this.networkFileName()}.json`)
+        } catch {
+            throw noProxyError
+        }
         const json = await import(`../.openzeppelin/${this.networkFileName()}.json`)
-        if (!json.proxies.length) throw new Error("proxy is not deployed yet")
+        if (!json.proxies.length) throw noProxyError
 
         const proxies: Proxie[] = json.proxies
         return proxies.slice(-numberOfProxies)
