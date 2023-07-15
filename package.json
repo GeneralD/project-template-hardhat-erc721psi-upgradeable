@@ -55,6 +55,7 @@
     "test": "hardhat test",
     "coverage": "hardhat coverage",
     "verify": "hardhat verify",
-    "balance": "hardhat balance"
+    "balance": "hardhat balance",
+    "proxy": "hardhat proxyAddress"
   }
 }
