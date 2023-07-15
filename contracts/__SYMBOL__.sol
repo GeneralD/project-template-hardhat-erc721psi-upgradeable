@@ -26,7 +26,7 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgrad
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 
-contract __SYMBOL__Ver0 is
+contract __SYMBOL__ is
     ERC721PsiBurnableUpgradeable,
     RevokableDefaultOperatorFiltererUpgradeable,
     Ownable2StepUpgradeable,
