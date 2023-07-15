@@ -12,7 +12,6 @@ import { HardhatUserConfig, task } from 'hardhat/config'
 
 import checkBalanceTask from './tasks/checkBalanceTask'
 import checkProxyAddressTask from './tasks/checkProxyAddressTask'
-import exportAllowlistMintCsvTask from './tasks/exportAllowlistMintCsvTask'
 import exportHashedAllowlistJsonTask from './tasks/exportHashedAllowlistJsonTask'
 import verifyEtherscanTask from './tasks/verifyEtherscanTask'
 
@@ -40,10 +39,6 @@ task("verifyEtherscan")
 task("exportAllowlist")
   .setDescription("Export hashed-allowlist addresses to a JSON file")
   .setAction(exportHashedAllowlistJsonTask)
-
-task("exportAllowlistMintProgress")
-  .setDescription("Export allowlist minting progress to a CSV")
-  .setAction(exportAllowlistMintCsvTask)
 
 const accounts = [
   process.env.DEPROY_WALLET_PRIVATE_KEY,
