@@ -523,7 +523,17 @@ contract __SYMBOL__Ver0 is
      * @param merkleProof merkle proof to check.
      */
     function isAllowlisted(bytes32[] calldata merkleProof) public view returns (bool) {
-        return merkleProof.verify(_allowlistMerkleRoot, keccak256(abi.encodePacked(msg.sender)));
+        return merkleProof.verify(_allowlistMerkleRoot, _leafHash(msg.sender));
+    }
+
+    /**
+     * @dev hash the given address.
+     * @param leaf address to hash.
+     * @return leaf hash.
+     */
+    function _leafHash(address leaf) internal pure returns (bytes32) {
+        // double hash with keccak256
+        return keccak256(bytes.concat(keccak256(abi.encode(leaf))));
     }
 
     modifier checkAllowlist(bytes32[] calldata merkleProof) {

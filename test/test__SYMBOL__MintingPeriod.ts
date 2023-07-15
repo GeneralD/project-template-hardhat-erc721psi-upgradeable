@@ -4,7 +4,6 @@ import { ethers, upgrades } from 'hardhat'
 
 import createMerkleTree from '../libraries/createMerkleTree'
 import { expect } from 'chai'
-import { keccak256 } from 'ethers/lib/utils'
 
 describe("__SYMBOL__ Minting Period", () => {
     it("Can public mint if minting period is not set", async () => {
@@ -91,10 +90,10 @@ describe("__SYMBOL__ Minting Period", () => {
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)
         const tree = createMerkleTree(allowlisted)
-        const root = tree.getHexRoot()
+        const root = tree.root
         await instance.setAllowlist(root)
 
-        const proof = tree.getHexProof(keccak256(alice.address))
+        const proof = tree.getProof([alice.address])
         await instance.connect(alice).allowlistMint(1, proof, { value: ethers.utils.parseEther("1") })
     })
 
@@ -121,7 +120,7 @@ describe("__SYMBOL__ Minting Period", () => {
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)
         const tree = createMerkleTree(allowlisted)
-        const root = tree.getHexRoot()
+        const root = tree.root
         await instance.setAllowlist(root)
 
         const now = (await ethers.provider.getBlock("latest")).timestamp
@@ -129,7 +128,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const dayAfterTommorow = tommorow + 86400
         await instance.setAllowlistMintAvailablePeriod(tommorow, dayAfterTommorow)
 
-        const proof = tree.getHexProof(keccak256(alice.address))
+        const proof = tree.getProof([alice.address])
         await expect(instance.connect(alice).allowlistMint(1, proof, { value: ethers.utils.parseEther("1") }))
             .to.be.revertedWith("allowlist minting: not started or ended")
     })
@@ -145,7 +144,7 @@ describe("__SYMBOL__ Minting Period", () => {
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)
         const tree = createMerkleTree(allowlisted)
-        const root = tree.getHexRoot()
+        const root = tree.root
         await instance.setAllowlist(root)
 
         const now = (await ethers.provider.getBlock("latest")).timestamp
@@ -153,7 +152,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const dayBeforeYesterday = yesterday - 86400
         await instance.setAllowlistMintAvailablePeriod(dayBeforeYesterday, yesterday)
 
-        const proof = tree.getHexProof(keccak256(alice.address))
+        const proof = tree.getProof([alice.address])
         await expect(instance.connect(alice).allowlistMint(1, proof, { value: ethers.utils.parseEther("1") }))
             .to.be.revertedWith("allowlist minting: not started or ended")
     })
@@ -169,7 +168,7 @@ describe("__SYMBOL__ Minting Period", () => {
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)
         const tree = createMerkleTree(allowlisted)
-        const root = tree.getHexRoot()
+        const root = tree.root
         await instance.setAllowlist(root)
 
         const now = (await ethers.provider.getBlock("latest")).timestamp
@@ -177,7 +176,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const tommorow = now + 86400
         await instance.setAllowlistMintAvailablePeriod(yesterday, tommorow)
 
-        const proof = tree.getHexProof(keccak256(alice.address))
+        const proof = tree.getProof([alice.address])
         await instance.connect(alice).allowlistMint(1, proof, { value: ethers.utils.parseEther("1") })
     })
 })

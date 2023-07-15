@@ -1,7 +1,5 @@
-import MerkleTree from 'merkletreejs'
-import { keccak256 } from 'ethers/lib/utils'
+import { StandardMerkleTree } from "@openzeppelin/merkle-tree"
 
 export default (addresses: string[]) => {
-    const leaves = addresses.map(keccak256)
-    return new MerkleTree(leaves, keccak256, { sort: true })
+    return StandardMerkleTree.of(addresses.map(x => [x]), ["address"])
 }

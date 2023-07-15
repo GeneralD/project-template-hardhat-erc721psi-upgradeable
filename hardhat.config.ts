@@ -10,11 +10,11 @@ import * as dotenv from 'dotenv'
 
 import { HardhatUserConfig, task } from 'hardhat/config'
 
-import checkBalance from './tasks/checkBalance'
-import exportAllowlistMintCSV from './tasks/exportAllowlistMintCSV'
+import checkBalanceTask from './tasks/checkBalanceTask'
+import exportAllowlistMintCSVTask from './tasks/exportAllowlistMintCSVTask'
 import exportHashedAllowlistJsonTask from './tasks/exportHashedAllowlistJsonTask'
 import snapshotTask from './tasks/snapshotTask'
-import verifyEtherscan from './tasks/verifyEtherscan'
+import verifyEtherscanTask from './tasks/verifyEtherscanTask'
 
 dotenv.config()
 
@@ -27,11 +27,11 @@ task("accounts")
 
 task("balance")
   .setDescription("Prints the balance of an account")
-  .setAction(checkBalance)
+  .setAction(checkBalanceTask)
 
 task("verifyEtherscan")
   .setDescription("alternative verify task but sets arguments automatically")
-  .setAction(verifyEtherscan)
+  .setAction(verifyEtherscanTask)
 
 task("snapshot")
   .setDescription("Take a snapshot of owners of a collection")
@@ -43,7 +43,7 @@ task("exportAllowlist")
 
 task("exportAllowlistMintProgress")
   .setDescription("Export allowlist minting progress to a CSV")
-  .setAction(exportAllowlistMintCSV)
+  .setAction(exportAllowlistMintCSVTask)
 
 const accounts = [
   process.env.DEPROY_WALLET_PRIVATE_KEY,
