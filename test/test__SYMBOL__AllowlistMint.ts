@@ -2,7 +2,7 @@ import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import { ethers, upgrades } from 'hardhat'
 import { keccak256, parseEther } from 'ethers/lib/utils'
 
-import MerkleTree from 'merkletreejs'
+import createMerkleTree from '../libraries/createMerkleTree'
 import { describe } from 'mocha'
 import { expect } from 'chai'
 
@@ -17,9 +17,8 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlistedMemberMintLimit(5)
 
         // register allowlist
-        const allowlisted = [john, jonny, jonathan]
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
         await instance.setAllowlist(root)
 
@@ -49,9 +48,8 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlistedMemberMintLimit(5)
 
         // register allowlist
-        const allowlisted = [john, jonny, jonathan]
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
         await instance.setAllowlist(root)
 
@@ -72,9 +70,8 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlistedMemberMintLimit(5)
 
         // register allowlist
-        const allowlisted = [john, jonny, jonathan]
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
         await instance.setAllowlist(root)
 
@@ -114,9 +111,8 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlistedMemberMintLimit(5)
 
         // register allowlist
-        const allowlisted = [john, jonny, jonathan]
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
         await instance.setAllowlist(root)
 
@@ -157,9 +153,8 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlistedMemberMintLimit(20)
 
         // register allowlist
-        const allowlisted = [john, jonny, jonathan]
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
         await instance.setAllowlist(root)
 
@@ -185,9 +180,8 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlistedMemberMintLimit(5)
 
         // register allowlist
-        const allowlisted = [john, jonny, jonathan]
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
         await instance.setAllowlist(root)
 
@@ -215,9 +209,8 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlistedMemberMintLimit(5)
 
         // register allowlist
-        const allowlisted = [john, jonny, jonathan]
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
         await instance.setAllowlist(root)
 

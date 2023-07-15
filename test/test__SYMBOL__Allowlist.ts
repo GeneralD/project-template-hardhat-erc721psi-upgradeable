@@ -1,18 +1,16 @@
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { describe, it } from 'mocha'
+import { ethers, upgrades } from 'hardhat'
+
+import createMerkleTree from '../libraries/createMerkleTree'
 import { expect } from 'chai'
 import { keccak256 } from 'ethers/lib/utils'
-import { ethers, upgrades } from 'hardhat'
-import { MerkleTree } from 'merkletreejs'
-import { describe, it } from 'mocha'
-
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 
 describe("__SYMBOL__ allowlist", () => {
     it("Allowlisted member is verified", async () => {
         const [, john, jonny, jonathan] = await ethers.getSigners()
-        const allowlisted = [john, jonny, jonathan]
-
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
 
         const factory = await latest__SYMBOL__Factory
@@ -33,10 +31,8 @@ describe("__SYMBOL__ allowlist", () => {
 
     it("Not allowlisted member is not verified", async () => {
         const [deployer, john, jonny, jonathan, mike, michael, mick] = await ethers.getSigners()
-        const allowlisted = [john, jonny, jonathan]
-
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
 
         const factory = await latest__SYMBOL__Factory
@@ -61,10 +57,8 @@ describe("__SYMBOL__ allowlist", () => {
 
     it("Other's hex proof is invalid", async () => {
         const [, john, jonny, jonathan, mike] = await ethers.getSigners()
-        const allowlisted = [john, jonny, jonathan]
-
-        const leaves = allowlisted.map(account => keccak256(account.address))
-        const tree = new MerkleTree(leaves, keccak256, { sort: true })
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
         const root = tree.getHexRoot()
 
         const factory = await latest__SYMBOL__Factory
