@@ -1,19 +1,15 @@
-import '@nomiclabs/hardhat-etherscan'
-import '@nomiclabs/hardhat-waffle'
-import '@nomiclabs/hardhat-web3'
+import '@nomicfoundation/hardhat-toolbox'
 import '@openzeppelin/hardhat-upgrades'
-import '@typechain/hardhat'
-import 'hardhat-gas-reporter'
-import 'solidity-coverage'
 
 import * as dotenv from 'dotenv'
-
+import { parseEther } from 'ethers'
 import { HardhatUserConfig, task } from 'hardhat/config'
 
+import CryptoWallet from './libraries/CryptoWallet'
 import checkBalanceTask from './tasks/checkBalanceTask'
 import checkProxyAddressTask from './tasks/checkProxyAddressTask'
 import exportHashedAllowlistJsonTask from './tasks/exportHashedAllowlistJsonTask'
-import verifyEtherscanTask from './tasks/verifyEtherscanTask'
+import verifyTask from './tasks/verifyTask'
 
 dotenv.config()
 
@@ -32,9 +28,9 @@ task("proxyAddress")
   .setDescription("Prints the address of the deployed proxy")
   .setAction(checkProxyAddressTask)
 
-task("verifyEtherscan")
-  .setDescription("alternative verify task but sets arguments automatically")
-  .setAction(verifyEtherscanTask)
+task("vefityProxy")
+  .setDescription("Verifies the deployed proxy")
+  .setAction(verifyTask)
 
 task("exportAllowlist")
   .setDescription("Export hashed-allowlist addresses to a JSON file")
@@ -46,6 +42,7 @@ const accounts = [
 
 const testAccounts = [
   process.env.TEST_WALLET_PRIVATE_KEY,
+  ...Array.from({ length: 9 }, () => new CryptoWallet()).map((wallet) => wallet.privateKey),
 ].filter((elm?: string): elm is string => elm !== undefined)
 
 // You need to export an object to set up your config
@@ -63,28 +60,22 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 1337,
+      accounts: testAccounts.map((privateKey) => ({
+        privateKey, balance: parseEther("10000").toString()
+      })),
     },
     // Ethereum networks
     mainnet: {
       url: process.env.MAINNET_URL || "",
       chainId: 1,
       accounts: accounts,
+      timeout: 1000 * 60 * 5 // 5 minutes
     },
-    goerli: {
-      url: process.env.GOERLI_URL || "",
-      chainId: 5,
+    sepolia: {
+      url: process.env.SEPOLIA_URL || "",
+      chainId: 11155111,
       accounts: testAccounts,
-    },
-    // Binance smart chains
-    bsc_mainnet: {
-      url: "https://bsc-dataseed.binance.org/",
-      chainId: 56,
-      accounts: accounts,
-    },
-    bsc_testnet: {
-      url: "https://data-seed-prebsc-2-s3.binance.org:8545/",
-      chainId: 97,
-      accounts: testAccounts,
+      timeout: 1000 * 60 * 5 // 5 minutes
     },
   },
   gasReporter: {
@@ -92,13 +83,14 @@ const config: HardhatUserConfig = {
     currency: "JPY",
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
   },
+  sourcify: {
+    enabled: true,
+  },
   etherscan: {
     // Note: To see full list of supported networks, run `npx hardhat verify --list-networks`.
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY ?? "",
-      goerli: process.env.ETHERSCAN_API_KEY ?? "",
-      bsc: process.env.BSCSCAN_API_KEY ?? "",
-      bscTestnet: process.env.BSCSCAN_API_KEY ?? "",
+      sepolia: process.env.ETHERSCAN_API_KEY ?? "",
     },
   },
 }

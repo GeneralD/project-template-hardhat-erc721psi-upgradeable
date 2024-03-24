@@ -1,8 +1,8 @@
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
-import { ethers, upgrades } from 'hardhat'
-
-import { describe } from 'mocha'
 import { expect } from 'chai'
+import { ethers, upgrades } from 'hardhat'
+import { describe } from 'mocha'
+
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 
 describe("Withdraw from __SYMBOL__", () => {
     it("Withdraw all", async () => {
@@ -14,21 +14,21 @@ describe("Withdraw from __SYMBOL__", () => {
         await instance.setMintLimit(200)
 
         const mintPrice = await instance.publicPrice()
-        const paid = mintPrice.mul(100)
+        const paid = mintPrice * 100n
 
-        const balanceBeforePay = await deployer.getBalance()
+        const balanceBeforePay = await ethers.provider.getBalance(deployer)
         await instance.publicMint(100, { value: paid })
-        const balanceAfterPay = await deployer.getBalance()
+        const balanceAfterPay = await ethers.provider.getBalance(deployer)
 
-        expect(await instance.provider.getBalance(instance.address)).to.equal(paid)
-        expect(balanceBeforePay.sub(balanceAfterPay).gt(paid)).is.true // gt because of gas
+        expect(await ethers.provider.getBalance(instance)).to.equal(paid)
+        expect(balanceBeforePay - balanceAfterPay).is.greaterThan(paid) // gt because of gas
 
         await instance.withdraw()
-        const balanceAfterWithdraw = await deployer.getBalance()
+        const balanceAfterWithdraw = await ethers.provider.getBalance(deployer)
 
-        expect(await instance.provider.getBalance(instance.address)).to.equal(0)
-        expect(balanceAfterWithdraw.gt(balanceAfterPay))
-        expect(balanceAfterWithdraw.lt(balanceBeforePay)) // lt because of gas
+        expect(await ethers.provider.getBalance(instance)).to.equal(0)
+        expect(balanceAfterWithdraw).is.greaterThan(balanceAfterPay)
+        expect(balanceAfterWithdraw).is.lessThan(balanceBeforePay) // lt because of gas
     })
 
     it("Nobody can withdraw other than owner", async () => {
@@ -50,14 +50,14 @@ describe("Withdraw from __SYMBOL__", () => {
         await instance.setMintLimit(200)
 
         const mintPrice = await instance.publicPrice()
-        const paid = mintPrice.mul(100)
+        const paid = mintPrice * 100n
         await expect(await instance.connect(alice).publicMint(100, { value: paid }))
-            .to.changeEtherBalances([instance, alice], [paid, paid.mul(-1)])
+            .to.changeEtherBalances([instance, alice], [paid, -paid])
 
 
         await instance.setWithdrawalReceiver(ivan.address)
         await expect(await instance.withdraw())
-            .to.changeEtherBalances([instance, ivan], [paid.mul(-1), paid])
+            .to.changeEtherBalances([instance, ivan], [-paid, paid])
 
     })
 })

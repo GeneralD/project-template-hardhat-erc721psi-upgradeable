@@ -1,8 +1,8 @@
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import { parseEther } from 'ethers'
 import env, { ethers } from 'hardhat'
 
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 import HardhatRuntimeUtility from '../libraries/HardhatRuntimeUtility'
-import { parseEther } from 'ethers/lib/utils'
 
 async function main() {
     const util = new HardhatRuntimeUtility(env)

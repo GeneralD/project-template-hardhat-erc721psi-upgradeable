@@ -1,5 +1,5 @@
+import { ZeroAddress } from 'ethers'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { constants } from 'ethers'
 
 export type Proxie = {
     address: string
@@ -18,7 +18,7 @@ export default class {
     public allowlistedAddresses = () => [...new Set(
         process.env.ALLOWLIST_ADDRESSES?.split("\n")
             .filter(address => this.addressRegex.test(address))
-            .map(address => this.env.web3.utils.toChecksumAddress(address))
+            .map(this.env.ethers.getAddress)
     )]
 
     public deployedProxies = async (numberOfProxies: number) => {
@@ -43,7 +43,7 @@ export default class {
             // so need to check if the proxy is currently on chain.
             if (this.env.network.name == 'localhost') {
                 const adminAddresses = await Promise.all(proxies.map(proxy => this.env.upgrades.erc1967.getAdminAddress(proxy.address)))
-                return !adminAddresses.includes(constants.AddressZero)
+                return !adminAddresses.includes(ZeroAddress)
             }
             return true
         } catch {

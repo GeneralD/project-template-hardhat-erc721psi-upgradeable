@@ -1,9 +1,9 @@
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
-import { describe, it } from 'mocha'
-import { keccak256, toUtf8Bytes } from 'ethers/lib/utils'
-
 import { expect } from 'chai'
+import { keccak256, toUtf8Bytes } from 'ethers'
 import { upgrades } from 'hardhat'
+import { describe, it } from 'mocha'
+
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 
 describe("__SYMBOL__ TokenURI", () => {
     it("Check if TokenURI doesn't end with slash, the value will be reverted", async () => {

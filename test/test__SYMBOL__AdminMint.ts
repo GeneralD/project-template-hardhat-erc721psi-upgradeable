@@ -1,9 +1,9 @@
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
-import { describe, it } from 'mocha'
-import { ethers, upgrades } from 'hardhat'
-
-import { constants } from 'ethers'
 import { expect } from 'chai'
+import { ZeroAddress } from 'ethers'
+import { ethers, upgrades } from 'hardhat'
+import { describe, it } from 'mocha'
+
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 
 describe("Mint __SYMBOL__ as admin", () => {
   it("Owner can mint in the limit", async () => {
@@ -15,7 +15,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMint(10))
       .to.emit(instance, "Transfer") // just last event can be seen in the test
-      .withArgs(constants.AddressZero, deployer.address, 10)
+      .withArgs(ZeroAddress, deployer.address, 10)
 
     expect(await instance.totalSupply()).to.equal(10)
   })
@@ -29,7 +29,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMintTo(bob.address, 50))
       .to.emit(instance, "Transfer")
-      .withArgs(constants.AddressZero, bob.address, 50)
+      .withArgs(ZeroAddress, bob.address, 50)
 
     expect(await instance.balanceOf(bob.address)).to.equal(50)
   })
@@ -55,7 +55,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMint(10))
       .to.emit(instance, "Transfer")
-      .withArgs(constants.AddressZero, deployer.address, 10)
+      .withArgs(ZeroAddress, deployer.address, 10)
 
     expect(await instance.totalSupply()).to.equal(10)
 
@@ -63,7 +63,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMintTo(alice.address, 10))
       .to.emit(instance, "Transfer")
-      .withArgs(constants.AddressZero, alice.address, 20)
+      .withArgs(ZeroAddress, alice.address, 20)
 
     expect(await instance.totalSupply()).to.equal(20)
     expect(await instance.ownerOf(11)).to.equal(alice.address)
@@ -80,7 +80,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMint(20))
       .to.emit(instance, "Transfer")
-      .withArgs(constants.AddressZero, deployer.address, 20)
+      .withArgs(ZeroAddress, deployer.address, 20)
 
     expect(await instance.totalSupply())
       .to.equal(20)
@@ -93,7 +93,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMint(15))
       .to.emit(instance, "Transfer")
-      .withArgs(constants.AddressZero, deployer.address, 35)
+      .withArgs(ZeroAddress, deployer.address, 35)
 
     expect(await instance.totalSupply())
       .to.equal(35)
@@ -109,7 +109,7 @@ describe("Mint __SYMBOL__ as admin", () => {
 
     await expect(instance.adminMint(20))
       .to.emit(instance, "Transfer")
-      .withArgs(constants.AddressZero, deployer.address, 20)
+      .withArgs(ZeroAddress, deployer.address, 20)
 
     expect(await instance.totalSupply())
       .to.equal(20)

@@ -1,10 +1,10 @@
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
-import { ethers, upgrades } from 'hardhat'
-import { keccak256, parseEther } from 'ethers/lib/utils'
-
-import createMerkleTree from '../libraries/createMerkleTree'
-import { describe } from 'mocha'
 import { expect } from 'chai'
+import { keccak256, parseEther } from 'ethers'
+import { ethers, upgrades } from 'hardhat'
+import { describe } from 'mocha'
+
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import createMerkleTree from '../libraries/createMerkleTree'
 
 describe("Mint ALC as allowlisted member", () => {
     it("Allowlisted member can mint", async () => {
@@ -25,14 +25,14 @@ describe("Mint ALC as allowlisted member", () => {
         // check balance to mint
         const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
-        const totalPrice = price.mul(quantity)
-        const balance = await john.getBalance()
-        expect(balance.gte(totalPrice)).is.true
+        const totalPrice = price * quantity
+        const balance = await ethers.provider.getBalance(john)
+        expect(balance).is.greaterThanOrEqual(totalPrice)
 
         // mint
         const proof = tree.getHexProof(keccak256(john.address))
         await expect(await instance.connect(john).allowlistMint(quantity, proof, { value: totalPrice }))
-            .to.changeEtherBalances([instance, john], [totalPrice, totalPrice.mul(-1)])
+            .to.changeEtherBalances([instance, john], [totalPrice, -totalPrice])
 
         expect(await instance.allowlistMemberMintCount(john.address))
             .to.equal(quantity)
@@ -78,13 +78,13 @@ describe("Mint ALC as allowlisted member", () => {
         // check balance to mint
         const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
-        const totalPrice = price.mul(quantity)
-        const balance = await jonathan.getBalance()
-        expect(balance.gte(totalPrice)).is.true
+        const totalPrice = price * quantity
+        const balance = await ethers.provider.getBalance(jonathan)
+        expect(balance).is.greaterThanOrEqual(totalPrice)
 
         const proofOfJonathan = tree.getHexProof(keccak256(jonathan.address))
         await expect(await instance.connect(jonathan).allowlistMint(quantity, proofOfJonathan, { value: totalPrice }))
-            .to.changeEtherBalances([instance, jonathan], [totalPrice, totalPrice.mul(-1)])
+            .to.changeEtherBalances([instance, jonathan], [totalPrice, -totalPrice])
 
         expect(await instance.allowlistMemberMintCount(jonathan.address))
             .to.equal(quantity)
@@ -119,13 +119,13 @@ describe("Mint ALC as allowlisted member", () => {
         // check balance to mint
         const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
-        const totalPrice = price.mul(quantity)
-        const balance = await jonathan.getBalance()
-        expect(balance.gte(totalPrice)).is.true
+        const totalPrice = price * quantity
+        const balance = await ethers.provider.getBalance(jonathan)
+        expect(balance).is.greaterThanOrEqual(totalPrice)
 
         const proofOfJonathan = tree.getHexProof(keccak256(jonathan.address))
         await expect(await instance.connect(jonathan).allowlistMint(quantity, proofOfJonathan, { value: totalPrice }))
-            .to.changeEtherBalances([instance, jonathan], [totalPrice, totalPrice.mul(-1)])
+            .to.changeEtherBalances([instance, jonathan], [totalPrice, -totalPrice])
 
         expect(await instance.allowlistMemberMintCount(jonathan.address))
             .to.equal(quantity)
@@ -161,9 +161,9 @@ describe("Mint ALC as allowlisted member", () => {
         // check balance to mint
         const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
-        const totalPrice = price.mul(quantity)
-        const balance = await jonathan.getBalance()
-        expect(balance.gte(totalPrice)).is.true
+        const totalPrice = price * quantity
+        const balance = await ethers.provider.getBalance(jonathan)
+        expect(balance).is.greaterThanOrEqual(totalPrice)
 
         const proofOfJonathan = tree.getHexProof(keccak256(jonathan.address))
         await expect(instance.connect(jonathan).allowlistMint(quantity, proofOfJonathan, { value: totalPrice }))
@@ -188,13 +188,13 @@ describe("Mint ALC as allowlisted member", () => {
         // check balance to mint
         const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
-        const totalPrice = price.mul(quantity)
-        const balance = await john.getBalance()
-        expect(balance.gte(totalPrice)).is.true
+        const totalPrice = price * quantity
+        const balance = await ethers.provider.getBalance(john)
+        expect(balance).is.greaterThanOrEqual(totalPrice)
 
         // try to mint without enough ETH
         const proof = tree.getHexProof(keccak256(john.address))
-        const paid = totalPrice.mul(99).div(100) // 99% of total price
+        const paid = totalPrice * 99n / 100n // 99% of total price
         await expect(instance.connect(john).allowlistMint(quantity, proof, { value: paid }))
             .to.revertedWith("invalid amount of eth sent")
     })
@@ -217,13 +217,13 @@ describe("Mint ALC as allowlisted member", () => {
         // check balance to mint
         const price = await instance.allowlistPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
-        const totalPrice = price.mul(quantity)
-        const balance = await john.getBalance()
-        expect(balance.gte(totalPrice)).is.true
+        const totalPrice = price * quantity
+        const balance = await ethers.provider.getBalance(john)
+        expect(balance).is.greaterThanOrEqual(totalPrice)
 
         // try to mint without enough ETH
         const proof = tree.getHexProof(keccak256(john.address))
-        const paid = totalPrice.mul(101).div(100) // 101% of total price
+        const paid = totalPrice * 101n / 100n // 101% of total price
         await expect(instance.connect(john).allowlistMint(quantity, proof, { value: paid }))
             .to.revertedWith("invalid amount of eth sent")
     })

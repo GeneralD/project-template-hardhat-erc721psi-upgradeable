@@ -1,10 +1,10 @@
-import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
-import { describe, it } from 'mocha'
-import { ethers, upgrades } from 'hardhat'
-
-import createMerkleTree from '../libraries/createMerkleTree'
 import { expect } from 'chai'
-import { keccak256 } from 'ethers/lib/utils'
+import { keccak256 } from 'ethers'
+import { ethers, upgrades } from 'hardhat'
+import { describe, it } from 'mocha'
+
+import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
+import createMerkleTree from '../libraries/createMerkleTree'
 
 describe("__SYMBOL__ allowlist", () => {
     it("Allowlisted member is verified", async () => {
