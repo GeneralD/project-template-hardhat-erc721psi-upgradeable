@@ -47,8 +47,8 @@ async function main() {
     //// Pricing
     ///////////////////////////////////////////////////////////////////
 
-    await instance.setPublicPrice(parseEther("0.01"), { nonce: nonce++ })
-    await instance.setAllowlistPrice(parseEther("0.005"), { nonce: nonce++ })
+    await instance.setPublicMintPrice(parseEther("0.01"), { nonce: nonce++ })
+    await instance.setAllowlistMintPrice(parseEther("0.005"), { nonce: nonce++ })
 
     ///////////////////////////////////////////////////////////////////
     //// Reveal
