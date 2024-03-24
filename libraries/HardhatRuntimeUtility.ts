@@ -18,7 +18,7 @@ export default class {
     public allowlistedAddresses = () => [...new Set(
         process.env.ALLOWLIST_ADDRESSES?.split("\n")
             .filter(address => this.addressRegex.test(address))
-            .map(this.env.ethers.getAddress)
+            .map(address => this.env.ethers.getAddress(address))
     )]
 
     public deployedProxies = async (numberOfProxies: number) => {
