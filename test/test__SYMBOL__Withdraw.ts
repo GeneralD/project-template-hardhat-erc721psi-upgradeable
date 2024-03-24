@@ -13,7 +13,7 @@ describe("Withdraw from __SYMBOL__", () => {
 
         await instance.setMintLimit(200)
 
-        const mintPrice = await instance.publicPrice()
+        const mintPrice = await instance.publicMintPrice()
         const paid = mintPrice * 100n
 
         const balanceBeforePay = await ethers.provider.getBalance(deployer)
@@ -49,7 +49,7 @@ describe("Withdraw from __SYMBOL__", () => {
 
         await instance.setMintLimit(200)
 
-        const mintPrice = await instance.publicPrice()
+        const mintPrice = await instance.publicMintPrice()
         const paid = mintPrice * 100n
         await expect(await instance.connect(alice).publicMint(100, { value: paid }))
             .to.changeEtherBalances([instance, alice], [paid, -paid])

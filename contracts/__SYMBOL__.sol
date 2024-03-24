@@ -25,12 +25,14 @@ import "@openzeppelin/contracts-upgradeable/interfaces/IERC2981Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
+import "./interfaces/IPublicMintable.sol";
 
 contract __SYMBOL__ is
     ERC721PsiBurnableUpgradeable,
     RevokableDefaultOperatorFiltererUpgradeable,
     Ownable2StepUpgradeable,
-    IERC2981Upgradeable
+    IERC2981Upgradeable,
+    IPublicMintable
 {
     using MerkleProofUpgradeable for bytes32[];
     using StringsUpgradeable for uint256;
@@ -55,8 +57,8 @@ contract __SYMBOL__ is
         publicMintEndTimestamp = type(uint256).max; // never ends
         allowlistMintStartTimestamp = 0; // already started
         allowlistMintEndTimestamp = type(uint256).max; // never ends
-        publicPrice = 1 ether;
-        allowlistPrice = 0.01 ether;
+        publicMintPrice = 1 ether;
+        allowlistMintPrice = 0.01 ether;
         allowlistedMemberMintLimit = 1;
         allowlistSaleId = 0;
         revealTimestamp = 0;
@@ -329,7 +331,7 @@ contract __SYMBOL__ is
         checkSender
         whenPublicMintingAvailable
         checkMintQuantity(quantity)
-        checkPay(publicPrice, quantity)
+        checkPay(publicMintPrice, quantity)
     {
         _mint(msg.sender, quantity);
     }
@@ -354,7 +356,7 @@ contract __SYMBOL__ is
         checkAllowlist(merkleProof)
         checkAllowlistMintLimit(quantity)
         checkMintQuantity(quantity)
-        checkPay(allowlistPrice, quantity)
+        checkPay(allowlistMintPrice, quantity)
     {
         _incrementAllowlistMemberMintCount(msg.sender, quantity);
         _mint(msg.sender, quantity);
@@ -381,6 +383,10 @@ contract __SYMBOL__ is
         require(quantity > 0, "minting quantity must be greater than 0");
         require(_totalMinted() + quantity <= mintLimit, "minting exceeds the limit");
         _;
+    }
+
+    function publicMintLastTokenId() external view override returns (uint256) {
+        return mintLimit;
     }
 
     //////////////////////////////////
@@ -470,14 +476,15 @@ contract __SYMBOL__ is
     /**
      * @notice public price.
      */
-    uint256 public publicPrice;
+    uint256 public publicMintPrice;
 
     /**
      * @dev set public price.
-     * @param publicPrice_ public price.
+     * @param price public price.
      */
-    function setPublicPrice(uint256 publicPrice_) external onlyOwner {
-        publicPrice = publicPrice_;
+    function setPublicMintPrice(uint256 price) external onlyOwner {
+        publicMintPrice = price;
+        emit PublicMintPriceChanged(price);
     }
 
     //////////////////////////////////
@@ -487,14 +494,14 @@ contract __SYMBOL__ is
     /**
      * @notice allowlist price.
      */
-    uint256 public allowlistPrice;
+    uint256 public allowlistMintPrice;
 
     /**
      * @dev set allowlist price.
-     * @param allowlistPrice_ allowlist price.
+     * @param price allowlist price.
      */
-    function setAllowlistPrice(uint256 allowlistPrice_) external onlyOwner {
-        allowlistPrice = allowlistPrice_;
+    function setAllowlistMintPrice(uint256 price) external onlyOwner {
+        allowlistMintPrice = price;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -538,8 +545,6 @@ contract __SYMBOL__ is
     //////////////////////////////////
     //// Public Mint
     //////////////////////////////////
-
-    event PublicMintAvailablePeriodChanged(uint256 startTimestamp, uint256 endTimestamp);
 
     /**
      * @notice timestamp to start public minting

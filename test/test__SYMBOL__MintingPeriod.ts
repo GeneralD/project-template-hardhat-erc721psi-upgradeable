@@ -13,7 +13,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setPublicPrice(parseEther("1"))
+        await instance.setPublicMintPrice(parseEther("1"))
 
         await instance.connect(alice).publicMint(1, { value: parseEther("1") })
     })
@@ -36,7 +36,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setPublicPrice(parseEther("1"))
+        await instance.setPublicMintPrice(parseEther("1"))
 
         const now = (await ethers.provider.getBlock("latest"))?.timestamp || 0
         const tommorow = now + 86400
@@ -53,7 +53,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setPublicPrice(parseEther("1"))
+        await instance.setPublicMintPrice(parseEther("1"))
 
         const now = (await ethers.provider.getBlock("latest"))?.timestamp || 0
         const yesterday = now - 86400
@@ -70,7 +70,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setPublicPrice(parseEther("1"))
+        await instance.setPublicMintPrice(parseEther("1"))
 
         const now = (await ethers.provider.getBlock("latest"))?.timestamp || 0
         const yesterday = now - 86400
@@ -86,7 +86,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setAllowlistPrice(parseEther("1"))
+        await instance.setAllowlistMintPrice(parseEther("1"))
 
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)
@@ -116,7 +116,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setAllowlistPrice(parseEther("1"))
+        await instance.setAllowlistMintPrice(parseEther("1"))
 
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)
@@ -140,7 +140,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setAllowlistPrice(parseEther("1"))
+        await instance.setAllowlistMintPrice(parseEther("1"))
 
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)
@@ -164,7 +164,7 @@ describe("__SYMBOL__ Minting Period", () => {
         const [, alice, bob] = await ethers.getSigners()
 
         await instance.setMintLimit(10)
-        await instance.setAllowlistPrice(parseEther("1"))
+        await instance.setAllowlistMintPrice(parseEther("1"))
 
         // register allowlist
         const allowlisted = [alice, bob].map(account => account.address)

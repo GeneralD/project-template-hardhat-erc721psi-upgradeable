@@ -6,6 +6,16 @@ import { describe, it } from 'mocha'
 import { Latest__SYMBOL__, latest__SYMBOL__Factory } from '../libraries/const'
 
 describe("__SYMBOL__ Public Minting", () => {
+    it("Mint limit is set, then publicMintLastTokenId should be set", async () => {
+        const factory = await latest__SYMBOL__Factory
+        const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+        await instance.setMintLimit(300)
+
+        expect(await instance.mintLimit()).to.equal(300)
+        expect(await instance.publicMintLastTokenId()).to.equal(300)
+    })
+
     it("Can public mint", async () => {
         const [, john] = await ethers.getSigners()
         const factory = await latest__SYMBOL__Factory
@@ -14,7 +24,7 @@ describe("__SYMBOL__ Public Minting", () => {
         await instance.setMintLimit(300)
 
         // check balance to mint
-        const price = await instance.publicPrice()
+        const price = await instance.publicMintPrice()
         const quantity = 200n
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(john)
@@ -39,7 +49,7 @@ describe("__SYMBOL__ Public Minting", () => {
         await instance.setMintLimit(300)
 
         // check balance to mint
-        const price = await instance.publicPrice()
+        const price = await instance.publicMintPrice()
         const quantity = 400n
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(john)
@@ -57,7 +67,7 @@ describe("__SYMBOL__ Public Minting", () => {
         await instance.setMintLimit(300)
 
         // check balance to mint
-        const price = await instance.publicPrice()
+        const price = await instance.publicMintPrice()
         const quantity = 200n
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(john)

@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { parseEther } from 'ethers/lib/utils'
+import { parseEther } from 'ethers'
 import { ethers, upgrades } from 'hardhat'
 import { describe, it } from 'mocha'
 

@@ -23,7 +23,7 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowlistPrice()
+        const price = await instance.allowlistMintPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(john)
@@ -76,7 +76,7 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowlistPrice()
+        const price = await instance.allowlistMintPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(jonathan)
@@ -117,7 +117,7 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowlistPrice()
+        const price = await instance.allowlistMintPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(jonathan)
@@ -159,7 +159,7 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowlistPrice()
+        const price = await instance.allowlistMintPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(jonathan)
@@ -186,7 +186,7 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowlistPrice()
+        const price = await instance.allowlistMintPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(john)
@@ -215,7 +215,7 @@ describe("Mint ALC as allowlisted member", () => {
         await instance.setAllowlist(root)
 
         // check balance to mint
-        const price = await instance.allowlistPrice()
+        const price = await instance.allowlistMintPrice()
         const quantity = await instance.allowlistedMemberMintLimit()
         const totalPrice = price * quantity
         const balance = await ethers.provider.getBalance(john)
