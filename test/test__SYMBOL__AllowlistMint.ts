@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { keccak256, parseEther } from 'ethers'
+import { keccak256, parseEther, ZeroAddress } from 'ethers'
 import { ethers, upgrades } from 'hardhat'
 import { describe } from 'mocha'
 
@@ -236,5 +236,35 @@ describe("Mint ALC as allowlisted member", () => {
 
         await expect(instance.connect(john).incrementAllowlistSaleId())
             .to.be.revertedWith("Ownable: caller is not the owner")
+    })
+
+    it("Allowlist minting emits events", async () => {
+        const factory = await latest__SYMBOL__Factory
+        const instance = await upgrades.deployProxy(factory) as Latest__SYMBOL__
+
+        const [, john, jonny, jonathan] = await ethers.getSigners()
+
+        await instance.setMintLimit(100)
+        await instance.setAllowlistedMemberMintLimit(5)
+
+        // register allowlist
+        const allowlisted = [john, jonny, jonathan].map(account => account.address)
+        const tree = createMerkleTree(allowlisted)
+        const root = tree.getHexRoot()
+        await instance.setAllowlist(root)
+
+        // check balance to mint
+        const price = await instance.allowlistMintPrice()
+        const quantity = await instance.allowlistedMemberMintLimit()
+        const totalPrice = price * quantity
+        const balance = await ethers.provider.getBalance(john)
+        expect(balance).is.greaterThanOrEqual(totalPrice)
+
+        const proof = tree.getHexProof(keccak256(john.address))
+        await expect(instance.connect(john).allowlistMint(quantity, proof, { value: totalPrice }))
+            .to.emit(instance, "Transfer")
+            .withArgs(ZeroAddress, john.address, quantity)
+            .to.emit(instance, "AllowlistMinted")
+            .withArgs(john.address, 1n, quantity)
     })
 })

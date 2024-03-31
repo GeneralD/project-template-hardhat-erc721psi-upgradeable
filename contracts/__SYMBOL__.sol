@@ -14,7 +14,7 @@
     ██     ▒██████▒  ██    ██  ████████  ██   ███   ██████   ███████▒  ▒██████▒  ██   ██▓  ████████ 
     ██      ▒████▒   ██    ██  ████████  ██   ███   ░████░   ░█████▒    ▒████▒   ██   ▒██  ████████ 
 
-                            Copyright 2023 Yumenosuke (Nexum Founder/CTO)
+                            SPDX-FileCopyrightText: 2024 Yumenosuke Kokata
 */
 
 pragma solidity >=0.8.18;
@@ -26,13 +26,15 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgrad
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
 import "./interfaces/IPublicMintable.sol";
+import "./interfaces/IAllowlistMintable.sol";
 
 contract __SYMBOL__ is
     ERC721PsiBurnableUpgradeable,
     RevokableDefaultOperatorFiltererUpgradeable,
     Ownable2StepUpgradeable,
     IERC2981Upgradeable,
-    IPublicMintable
+    IPublicMintable,
+    IAllowlistMintable
 {
     using MerkleProofUpgradeable for bytes32[];
     using StringsUpgradeable for uint256;
@@ -299,20 +301,20 @@ contract __SYMBOL__ is
     //////////////////////////////////
 
     /**
-     * @dev mint the given quantity to the given address.
-     * @param quantity quantity to mint.
+     * @dev mint the given amount to the given address.
+     * @param amount amount to mint.
      */
-    function adminMint(uint256 quantity) external onlyOwner checkMintQuantity(quantity) {
-        _mint(msg.sender, quantity);
+    function adminMint(uint256 amount) external onlyOwner checkMintAmount(amount) {
+        _mint(msg.sender, amount);
     }
 
     /**
-     * @dev mint the given quantity to the given address.
+     * @dev mint the given amount to the given address.
      * @param to address to mint.
-     * @param quantity quantity to mint.
+     * @param amount amount to mint.
      */
-    function adminMintTo(address to, uint256 quantity) external onlyOwner checkMintQuantity(quantity) {
-        _mint(to, quantity);
+    function adminMintTo(address to, uint256 amount) external onlyOwner checkMintAmount(amount) {
+        _mint(to, amount);
     }
 
     //////////////////////////////////
@@ -320,20 +322,21 @@ contract __SYMBOL__ is
     //////////////////////////////////
 
     /**
-     * @dev mint the given quantity to the given address.
-     * @param quantity quantity to mint.
+     * @dev mint the given amount to the given address.
+     * @param amount amount to mint.
      */
     function publicMint(
-        uint256 quantity
+        uint256 amount
     )
         external
         payable
         checkSender
         whenPublicMintingAvailable
-        checkMintQuantity(quantity)
-        checkPay(publicMintPrice, quantity)
+        checkMintAmount(amount)
+        checkPay(publicMintPrice, amount)
     {
-        _mint(msg.sender, quantity);
+        _mint(msg.sender, amount);
+        emit PublicMinted(msg.sender, _nextTokenId() - amount, amount);
     }
 
     //////////////////////////////////
@@ -341,12 +344,12 @@ contract __SYMBOL__ is
     //////////////////////////////////
 
     /**
-     * @dev mint the given quantity to the given address.
-     * @param quantity quantity to mint.
+     * @dev mint the given amount to the given address.
+     * @param amount amount to mint.
      * @param merkleProof merkle proof to check.
      */
     function allowlistMint(
-        uint256 quantity,
+        uint256 amount,
         bytes32[] calldata merkleProof
     )
         external
@@ -354,12 +357,13 @@ contract __SYMBOL__ is
         checkSender
         whenAllowlistMintingAvailable
         checkAllowlist(merkleProof)
-        checkAllowlistMintLimit(quantity)
-        checkMintQuantity(quantity)
-        checkPay(allowlistMintPrice, quantity)
+        checkAllowlistMintLimit(amount)
+        checkMintAmount(amount)
+        checkPay(allowlistMintPrice, amount)
     {
-        _incrementAllowlistMemberMintCount(msg.sender, quantity);
-        _mint(msg.sender, quantity);
+        _incrementAllowlistMemberMintCount(msg.sender, amount);
+        _mint(msg.sender, amount);
+        emit AllowlistMinted(msg.sender, _nextTokenId() - amount, amount);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -379,13 +383,17 @@ contract __SYMBOL__ is
         mintLimit = _mintLimit;
     }
 
-    modifier checkMintQuantity(uint256 quantity) {
-        require(quantity > 0, "minting quantity must be greater than 0");
-        require(_totalMinted() + quantity <= mintLimit, "minting exceeds the limit");
+    modifier checkMintAmount(uint256 amount) {
+        require(amount > 0, "minting amount must be greater than 0");
+        require(_totalMinted() + amount <= mintLimit, "minting exceeds the limit");
         _;
     }
 
     function publicMintLastTokenId() external view override returns (uint256) {
+        return mintLimit;
+    }
+
+    function allowlistMintLastTokenId() external view override returns (uint256) {
         return mintLimit;
     }
 
@@ -424,10 +432,10 @@ contract __SYMBOL__ is
     /**
      * @dev Count up the number of tokens minted in the allowlist minting for the specified address.
      * @param member The address to count up the number of tokens minted in the allowlist minting.
-     * @param quantity The number of tokens to mint.
+     * @param amount The number of tokens to mint.
      */
-    function _incrementAllowlistMemberMintCount(address member, uint256 quantity) private {
-        _allowlistSaleIdToMemberMintCount[allowlistSaleId][member] += quantity;
+    function _incrementAllowlistMemberMintCount(address member, uint256 amount) private {
+        _allowlistSaleIdToMemberMintCount[allowlistSaleId][member] += amount;
     }
 
     /**
@@ -437,19 +445,19 @@ contract __SYMBOL__ is
 
     /**
      * @dev set maximum number of tokens to mint per allowlisted member.
-     * @param quantity maximum number of tokens to mint per allowlisted member.
+     * @param amount maximum number of tokens to mint per allowlisted member.
      */
-    function setAllowlistedMemberMintLimit(uint256 quantity) external onlyOwner {
-        allowlistedMemberMintLimit = quantity;
+    function setAllowlistedMemberMintLimit(uint256 amount) external onlyOwner {
+        allowlistedMemberMintLimit = amount;
     }
 
     /**
-     * @dev check if the given quantity is allowed to mint.
-     * @param quantity quantity to check.
+     * @dev check if the given amount is allowed to mint.
+     * @param amount amount to check.
      */
-    modifier checkAllowlistMintLimit(uint256 quantity) {
+    modifier checkAllowlistMintLimit(uint256 amount) {
         require(
-            allowlistMemberMintCount(msg.sender) + quantity <= allowlistedMemberMintLimit,
+            allowlistMemberMintCount(msg.sender) + amount <= allowlistedMemberMintLimit,
             "allowlist minting exceeds the limit"
         );
         _;
@@ -462,10 +470,10 @@ contract __SYMBOL__ is
     /**
      * @dev check if the paid amount is enough.
      * @param price price to check.
-     * @param quantity quantity to check.
+     * @param amount amount to check.
      */
-    modifier checkPay(uint256 price, uint256 quantity) {
-        require(msg.value == price * quantity, "invalid amount of eth sent");
+    modifier checkPay(uint256 price, uint256 amount) {
+        require(msg.value == price * amount, "invalid amount of eth sent");
         _;
     }
 
@@ -502,6 +510,7 @@ contract __SYMBOL__ is
      */
     function setAllowlistMintPrice(uint256 price) external onlyOwner {
         allowlistMintPrice = price;
+        emit AllowlistMintPriceChanged(price);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -582,8 +591,6 @@ contract __SYMBOL__ is
     //////////////////////////////////
     //// Allowlist Mint
     //////////////////////////////////
-
-    event AllowlistMintAvailablePeriodChanged(uint256 startTimestamp, uint256 endTimestamp);
 
     /**
      * @notice timestamp to start allowlist minting
