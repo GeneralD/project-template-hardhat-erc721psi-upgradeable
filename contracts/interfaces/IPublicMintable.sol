@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2024 Yumenosuke Kokata
 
-pragma solidity >=0.8.18;
+pragma solidity >=0.8;
 
 interface IPublicMintable {
     /**

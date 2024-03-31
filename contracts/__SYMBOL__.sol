@@ -17,7 +17,7 @@
                             SPDX-FileCopyrightText: 2024 Yumenosuke Kokata
 */
 
-pragma solidity >=0.8.18;
+pragma solidity >=0.8;
 
 import {ERC721PsiBurnableUpgradeable, ERC721PsiUpgradeable} from "@generald/erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
 import {Ownable2StepUpgradeable, OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
