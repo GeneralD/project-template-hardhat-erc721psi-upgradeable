@@ -49,6 +49,17 @@ interface IAllowlistMintable {
     function isAllowlisted(bytes32[] calldata merkleProof) external view returns (bool);
 
     /**
+     * @notice limit of tokens that can be minted by an allowlisted member
+     */
+    function allowlistedMemberMintLimit() external view returns (uint256);
+
+    /**
+     * @notice count of tokens that have been minted by an allowlisted member
+     * @param member address of the allowlisted member
+     */
+    function allowlistMemberMintCount(address member) external view returns (uint256);
+
+    /**
      * @notice mint tokens for allowlist sale
      * @param amount amount of tokens to mint
      * @param merkleProof merkle proof to verify the allowlist
