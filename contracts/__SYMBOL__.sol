@@ -19,14 +19,14 @@
 
 pragma solidity >=0.8.18;
 
-import "@generald/erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/interfaces/IERC2981Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
-import "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
-import "./interfaces/IPublicMintable.sol";
-import "./interfaces/IAllowlistMintable.sol";
+import {ERC721PsiBurnableUpgradeable, ERC721PsiUpgradeable} from "@generald/erc721psi/contracts/extension/ERC721PsiBurnableUpgradeable.sol";
+import {Ownable2StepUpgradeable, OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
+import {IERC2981Upgradeable, IERC165Upgradeable} from "@openzeppelin/contracts-upgradeable/interfaces/IERC2981Upgradeable.sol";
+import {MerkleProofUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
+import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import {RevokableDefaultOperatorFiltererUpgradeable, RevokableOperatorFiltererUpgradeable} from "operator-filter-registry/src/upgradeable/RevokableDefaultOperatorFiltererUpgradeable.sol";
+import {IPublicMintable} from "./interfaces/IPublicMintable.sol";
+import {IAllowlistMintable} from "./interfaces/IAllowlistMintable.sol";
 
 contract __SYMBOL__ is
     ERC721PsiBurnableUpgradeable,
